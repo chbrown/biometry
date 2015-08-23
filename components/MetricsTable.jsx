@@ -114,6 +114,7 @@ export default class MetricsTable extends React.Component {
           column.start.isBefore(action.started) && column.end.isAfter(action.ended));
         // the contents should default to non-empty in case there are no actions
         var spans = '\xA0'; // A0 is &nbsp; in hex
+        // apparently sometimes webpack's UglifyJS step breaks on \xA0 ?
         if (actions.length) {
           spans = actions.map(action => {
             return <span key={action.action_id} className={action.local ? 'local' : ''}
