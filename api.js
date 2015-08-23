@@ -38,7 +38,16 @@ function syncActiontypes(actiontypes, callback) {
 }
 exports.syncActiontypes = syncActiontypes;
 function fetchActions(callback) {
-    new httprequest_1.Request('GET', metry_host + '/actions').send(callback);
+    new httprequest_1.Request('GET', metry_host + '/actions').send(function (error, actions) {
+        if (error)
+            return callback(error);
+        // might as well hack it in-place?
+        actions.forEach(function (action) {
+            action.started = action.started ? new Date(action.started) : null;
+            action.ended = action.ended ? new Date(action.ended) : null;
+        });
+        callback(null, actions);
+    });
 }
 exports.fetchActions = fetchActions;
 function fetchActiontypes(callback) {

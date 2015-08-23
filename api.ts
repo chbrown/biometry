@@ -41,7 +41,15 @@ export function syncActiontypes(actiontypes: Actiontype[], callback: (error: Err
 }
 
 export function fetchActions(callback: (error: Error, actions?: Action[]) => void) {
-  new Request('GET', metry_host + '/actions').send(callback);
+  new Request('GET', metry_host + '/actions').send((error, actions) => {
+    if (error) return callback(error);
+    // might as well hack it in-place?
+    actions.forEach(action => {
+      action.started = action.started ? new Date(action.started) : null;
+      action.ended = action.ended ? new Date(action.ended) : null;
+    });
+    callback(null, actions);
+  });
 }
 
 export function fetchActiontypes(callback: (error: Error, actiontypes?: Actiontype[]) => void) {
