@@ -61,5 +61,5 @@ var thunkMiddleware = function (store) { return function (next) { return functio
     return operation(store.dispatch, store.getState);
 }; }; };
 // let createStoreWithMiddleware = applyMiddleware(loggerMiddleware, thunkMiddleware)(createStore);
-var createStoreWithMiddleware = redux_1.applyMiddleware(thunkMiddleware)(redux_1.createStore);
-exports.store = createStoreWithMiddleware(reducer);
+// let createStoreWithMiddleware = applyMiddleware(thunkMiddleware)(createStore);
+exports.store = redux_1.createStore(reducer);

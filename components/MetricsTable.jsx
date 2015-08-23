@@ -1,9 +1,9 @@
 /*jslint esnext: true */
-import React from 'react';
 import moment from 'moment';
-import {bindActionCreators as bindOperationCreators} from 'redux';
+import React from 'react';
 import {connect} from 'react-redux';
-import {SyncActions, FetchAll} from '../operations';
+import {fetchActions, fetchActiontypes, syncActions, syncActiontypes} from '../api';
+import {OperationType} from '../operations';
 
 /**
 Return a mixture of day-granularity timestamp (meaning, it will repeat from
@@ -15,58 +15,84 @@ function randInt() {
   return (new Date() % 10000000) * 1000 + (Math.random() * 1000 | 0);
 }
 
-function createRange(start: Date, end: Date, duration: moment.Duration): moment.Moment[] {
+function createRange(start: moment.Moment, end: moment.Moment, duration: moment.Duration): moment.Moment[] {
   var range: moment.Moment[] = [];
-  var cursor = moment.utc(start);
+  var cursor = start.clone();
   do {
     range.push(cursor.clone());
     cursor.add(duration);
   } while (cursor.isBefore(end));
+  range.push(end.clone());
   return range;
 }
-
 
 /**
 store props {
   actions: Action[];
   actiontypes: Actiontype[];
-  start: Date;
-  end: Date;
+  start: moment.Moment;
+  end: moment.Moment;
 }
 */
-
-@connect(
-  state => ({actions: state.actions, actiontypes: state.actiontypes}),
-  // the second argument, with bindOperationCreators, adds the given functions to this.props,
-  // and automatically maps calls to those functions over to the store via dispatch()
-  // bindOperationCreators is just a way to abstract the store away from
-  // components that don't need/want to know about it.
-  dispatch => bindOperationCreators({SyncActions, FetchAll}, dispatch)
-)
+@connect(state => ({actions: state.actions, actiontypes: state.actiontypes}))
 export default class MetricsTable extends React.Component {
-  constructor(props) {
-    super(props);
-  }
   componentDidMount() {
-    this.props.FetchAll();
+    fetchActions((error, actions) => {
+      if (error) return console.error('fetchActions error', error);
+      this.props.dispatch({
+        type: OperationType.ADD_ACTIONS,
+        actions,
+      });
+    });
+    fetchActiontypes((error, actiontypes) => {
+      if (error) return console.error('fetchActiontypes error', error);
+      this.props.dispatch({
+        type: OperationType.ADD_ACTIONTYPES,
+        actiontypes,
+      });
+    });
   }
-  onAdd(actiontype_id, column_moment) {
-    this.props.SyncActions([{
+  syncActions(...actions) {
+    // sync local actions
+    this.props.dispatch({type: OperationType.ADD_ACTIONS, actions});
+    // we may not get an immediate rerender of the grayed-out local action
+    // without this async closure (apparently it will group the http request
+    // and redraw into the same frame event, and wait to repaint until the http
+    // response comes back). setImmediate seems to have the same effect, timing
+    // wise, as requestAnimationFrame.
+    setImmediate(() => {
+      syncActions(actions, (error, actions) => {
+        if (error) return console.error('syncActions error', error);
+        this.props.dispatch({type: OperationType.ADD_ACTIONS, actions});
+      });
+    });
+  }
+  onAddAction(actiontype_id, column_moment) {
+    this.syncActions({
       actiontype_id,
       action_id: -randInt(),
       started: column_moment.toDate(),
       ended: column_moment.toDate(),
       local: true,
-    }]);
+    });
   }
-  onDelete(action_id, event) {
+  onDeleteAction(action_id, event) {
     event.stopPropagation();
     // create delete action
-    this.props.SyncActions([{
-      action_id,
-      deleted: new Date(),
-      local: true,
-    }]);
+    this.syncActions({action_id, deleted: new Date(), local: true});
+  }
+  onAddActiontype(event) {
+    // stop form submit
+    event.preventDefault();
+    // get input name
+    var input = React.findDOMNode(this.refs.actiontypeName);
+    var name = input.value;
+    var actiontypes = [{name}];
+    syncActiontypes(actiontypes, (error, actiontypes) => {
+      if (error) return console.error('syncActiontypes error', error);
+      this.props.dispatch({type: OperationType.ADD_ACTIONTYPES, actiontypes});
+      input.value = '';
+    });
   }
   render() {
     var range_moments = createRange(this.props.start, this.props.end, moment.duration(1, 'day'));
@@ -91,13 +117,13 @@ export default class MetricsTable extends React.Component {
         if (actions.length) {
           spans = actions.map(action => {
             return <span key={action.action_id} className={action.local ? 'local' : ''}
-              onMouseDown={this.onDelete.bind(this, action.action_id)}>I</span>;
+              onMouseDown={this.onDeleteAction.bind(this, action.action_id)}>I</span>;
           });
         }
         var td_key = column.middle.toISOString();
         return (
           <td key={td_key}>
-            <div className="cell" onMouseDown={this.onAdd.bind(this, actiontype.actiontype_id, column.middle)}>
+            <div className="cell" onMouseDown={this.onAddAction.bind(this, actiontype.actiontype_id, column.middle)}>
               {spans}
             </div>
           </td>
@@ -113,6 +139,15 @@ export default class MetricsTable extends React.Component {
         <tbody>
           {trs}
         </tbody>
+        <tfoot>
+          <tr>
+            <td>
+              <form onSubmit={this.onAddActiontype.bind(this)}>
+                <input type="text" ref="actiontypeName" />
+              </form>
+            </td>
+          </tr>
+        </tfoot>
       </table>
     );
   }

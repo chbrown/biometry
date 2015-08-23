@@ -93,5 +93,5 @@ const thunkMiddleware = store => next => operation => {
   return operation(store.dispatch, store.getState);
 };
 // let createStoreWithMiddleware = applyMiddleware(loggerMiddleware, thunkMiddleware)(createStore);
-let createStoreWithMiddleware = applyMiddleware(thunkMiddleware)(createStore);
-export let store = createStoreWithMiddleware(reducer);
+// let createStoreWithMiddleware = applyMiddleware(thunkMiddleware)(createStore);
+export let store = createStore(reducer);

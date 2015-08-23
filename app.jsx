@@ -1,9 +1,11 @@
 /*jslint esnext: true */
+import moment from 'moment';
 import React from 'react';
-import MetricsTable from './components/MetricsTable';
-import Router, {Route, DefaultRoute, NotFoundRoute, RouteHandler} from 'react-router';
-import {fetchAll, store, OperationType} from './store';
 import {Provider, connect} from 'react-redux';
+import Router, {Route, DefaultRoute, NotFoundRoute, RouteHandler} from 'react-router';
+
+import MetricsTable from './components/MetricsTable';
+import {fetchAll, store, OperationType} from './store';
 
 // uh, this is a weird way to add styles, but okay
 import './site.less';
@@ -20,10 +22,8 @@ export class App extends React.Component {
 
 class Actions extends React.Component {
   render() {
-    // console.log('Actions#props', this.props);
-    // console.log('Actions#context.router params', this.context.router.getCurrentParams());
-    var start = new Date(this.props.query.start || '2015-08-01');
-    var end = new Date(this.props.query.end || '2015-08-30');
+    var start = moment(this.props.query.start || '2015-08-01', 'YYYY-MM-DD');
+    var end = moment(this.props.query.end || '2015-08-30', 'YYYY-MM-DD');
     return (
       <MetricsTable start={start} end={end} />
     );
