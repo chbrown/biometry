@@ -20,5 +20,5 @@ $(BIN)/tsc $(BIN)/watsh:
 dev:
 	$(BIN)/watsh 'make site.css' site.less
 
-build/bundle.js: webpack-production.config.js app.jsx
+build/bundle.js: webpack.config.js app.jsx
 	NODE_ENV=production $(BIN)/webpack --config $<
