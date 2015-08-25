@@ -1,10 +1,10 @@
 {
   "name": "biometry",
   "description": "Biometry user interface",
+  "version": "0.0.2",
   "keywords": [
     "biometrics"
   ],
-  "version": "0.0.2",
   "homepage": "https://github.com/chbrown/biometry",
   "repository": {
     "type": "git",
@@ -22,7 +22,6 @@
     "babel-loader": "*",
     "css-loader": "*",
     "httprequest": "*",
-    "jsx-loader": "*",
     "less": "*",
     "less-loader": "*",
     "lodash": "*",

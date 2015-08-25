@@ -22,10 +22,12 @@ export class App extends React.Component {
 
 class Actions extends React.Component {
   render() {
-    var start = moment(this.props.query.start || '2015-08-01', 'YYYY-MM-DD');
-    var end = moment(this.props.query.end || '2015-08-30', 'YYYY-MM-DD');
+    var end = this.props.query.end ? moment(this.props.query.end, 'YYYY-MM-DD') : moment().startOf('day');
+    var start = this.props.query.start ? moment(this.props.query.start, 'YYYY-MM-DD') : end.clone().startOf('month');
     return (
-      <MetricsTable start={start} end={end} />
+      <section className="hpad">
+        <MetricsTable start={start} end={end} />
+      </section>
     );
   }
 }

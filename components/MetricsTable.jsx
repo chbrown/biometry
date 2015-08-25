@@ -36,6 +36,13 @@ store props {
 */
 @connect(state => ({actions: state.actions, actiontypes: state.actiontypes}))
 export default class MetricsTable extends React.Component {
+  constructor(props) {
+    super(props);
+    // optional things that props may or may not provide are coalesced as state variables
+    this.state = {
+      highlighted_date: props.highlighted_date || moment(),
+    };
+  }
   componentDidMount() {
     fetchActions((error, actions) => {
       if (error) return console.error('fetchActions error', error);
@@ -105,7 +112,9 @@ export default class MetricsTable extends React.Component {
     });
     var ths = columns.map(column => {
       var label = column.middle.format('M/D');
-      return <th key={label}>{label}</th>;
+      var highlighted = this.state.highlighted_date.isBetween(column.start, column.end);
+      var thClassName = highlighted ? 'highlighted' : '';
+      return <th key={label} className={thClassName}>{label}</th>;
     });
     var trs = this.props.actiontypes.map(actiontype => {
       var actiontype_actions = this.props.actions.filter(action => action.actiontype_id == actiontype.actiontype_id);
@@ -121,16 +130,23 @@ export default class MetricsTable extends React.Component {
               onMouseDown={this.onDeleteAction.bind(this, action.action_id)}>I</span>;
           });
         }
+        var highlighted = this.state.highlighted_date.isBetween(column.start, column.end);
+        var tdClassName = highlighted ? 'highlighted' : '';
         var td_key = column.middle.toISOString();
         return (
-          <td key={td_key}>
+          <td key={td_key} className={tdClassName}>
             <div className="cell" onMouseDown={this.onAddAction.bind(this, actiontype.actiontype_id, column.middle)}>
               {spans}
             </div>
           </td>
         );
       });
-      return <tr key={actiontype.actiontype_id}><td>{actiontype.name}</td>{tds}</tr>;
+      return (
+        <tr key={actiontype.actiontype_id}>
+          <td>{actiontype.name}</td>
+          {tds}
+        </tr>
+      );
     });
     return (
       <table>
@@ -143,8 +159,8 @@ export default class MetricsTable extends React.Component {
         <tfoot>
           <tr>
             <td>
-              <form onSubmit={this.onAddActiontype.bind(this)}>
-                <input type="text" ref="actiontypeName" />
+              <form onSubmit={this.onAddActiontype.bind(this)} className="vpad">
+                <input type="text" ref="actiontypeName" placeholder="New action type" />
               </form>
             </td>
           </tr>

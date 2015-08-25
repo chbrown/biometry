@@ -34,28 +34,41 @@ section {
 }
 // -----------------------
 
+body {
+  font: 14px "Times New Roman", Times, serif;
+}
+h1, h2, h3 {
+  font-family: Helvetica, Arial, sans-serif;
+}
+
 table {
   td, th {
     white-space: nowrap;
     text-align: center;
+    &.highlighted {
+      background-color: rgba(103, 191, 210, 0.5);
+    }
   }
   td:first-child {
     text-align: left;
   }
   th {
-    font-size: 90%;
-    padding: 0 2px;
-    vertical-align: bottom;
     &:first-child {
-      font-size: 100%;
       text-align: right;
+    }
+  }
+  tbody tr:hover {
+    // pinkish
+    background-color: rgba(210, 103, 155, 0.5);
+    td.highlighted {
+      background-color: rgba(210, 103, 155, 0.8);
     }
   }
 }
 
 .cell {
   cursor: pointer;
-  background-color: rgba(103, 191, 210, 0.5);
+  background-color: rgba(103, 191, 210, 0.3);
   min-width: 28px;
   span {
     cursor: not-allowed;
