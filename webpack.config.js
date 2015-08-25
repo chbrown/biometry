@@ -1,18 +1,12 @@
 var path = require('path');
 var webpack = require('webpack');
-// var ExtractTextPlugin = require("extract-text-webpack-plugin");
 
 var production = process.env.NODE_ENV == 'production';
 
-var plugins = production ? [
-  // exclude Moment locales (400 kB)
-  new webpack.IgnorePlugin(/^\.\/locale$/, [/moment$/]),
+var extra_plugins = production ? [
   new webpack.optimize.UglifyJsPlugin(),
   new webpack.optimize.OccurenceOrderPlugin(),
-] : [
-  new webpack.HotModuleReplacementPlugin(),
-  new webpack.NoErrorsPlugin()
-];
+] : [];
 
 var loaders = [
   {
@@ -21,7 +15,7 @@ var loaders = [
   },
   {
     test: /\.jsx$/,
-    loaders: (production ? ['react-hot-loader'] : []).concat('babel-loader?stage=1'),
+    loaders: (production ? [] : ['react-hot-loader']).concat('babel-loader?stage=1'),
     include: __dirname,
   },
 ];
@@ -33,14 +27,18 @@ var extra_entry = production ? [] : [
 ];
 
 module.exports = {
-  devtool: 'eval', // 'source-map',
+  devtool: production ? undefined : 'eval', // 'source-map',
   entry: extra_entry.concat('./app'),
   output: {
     path: path.join(__dirname, 'build'),
     filename: 'bundle.js',
     publicPath: '/build/'
   },
-  plugins: plugins,
+  plugins: [
+    // exclude Moment locales (400 kB)
+    new webpack.IgnorePlugin(/^\.\/locale$/, [/moment$/]),
+    new webpack.NoErrorsPlugin()
+  ].concat(extra_plugins),
   resolve: {
     extensions: [
       '',
