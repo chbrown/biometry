@@ -20,7 +20,9 @@
     "async": "*",
     "babel-core": "*",
     "babel-loader": "*",
+    "babel-plugin-react-transform": "*",
     "css-loader": "*",
+    "express": "*",
     "httprequest": "*",
     "less": "*",
     "less-loader": "*",
@@ -29,13 +31,17 @@
     "react-hot-loader": "*",
     "react-redux": "*",
     "react-router": "*",
+    "react-transform-webpack-hmr": "*",
+    "react-transform-catch-errors": "*",
     "redux": "*",
     "redux-devtools": "*",
     "style-loader": "*",
     "typescript": "next",
     "watsh": "*",
     "webpack": "*",
-    "webpack-dev-server": "*"
+    "webpack-dev-middleware": "*",
+    "webpack-dev-server": "*",
+    "webpack-hot-middleware": "*"
   },
   "scripts": {
     "dev": "PORT=8080 node webpack-dev-server.js"

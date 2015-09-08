@@ -24,6 +24,14 @@ export interface Action {
   */
   local?: boolean;
 }
+export interface ActionJSON {
+  action_id: number;
+  actiontype_id?: number;
+  started?: string;
+  ended?: string;
+  deleted?: string;
+  entered?: string;
+}
 
 export interface Actiontype {
   actiontype_id: number;
@@ -41,6 +49,7 @@ Assumes that `actions` is already deduplicated and does not contain deletes.
 Does not mutate `actions`.
 */
 function concatAction(actions: Action[], new_action: Action) {
+  // remove any existing actions that have the same action_id
   var filtered_actions = actions.filter(action => action.action_id !== new_action.action_id);
   // deleted might be null if it comes from the database, or undefined if from the app
   if (!new_action.deleted) {

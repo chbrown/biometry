@@ -40,7 +40,7 @@ export default class MetricsTable extends React.Component {
     super(props);
     // optional things that props may or may not provide are coalesced as state variables
     this.state = {
-      highlighted_date: props.highlighted_date || moment(),
+      highlighted_moment: props.highlighted_moment || moment(),
     };
   }
   componentDidMount() {
@@ -74,12 +74,12 @@ export default class MetricsTable extends React.Component {
       });
     });
   }
-  onAddAction(actiontype_id, column_moment) {
+  onAddAction(actiontype_id, started_moment, ended_moment) {
     this.syncActions({
       actiontype_id,
       action_id: -randInt(),
-      started: column_moment.toDate(),
-      ended: column_moment.toDate(),
+      started: started_moment.toDate(),
+      ended: ended_moment.toDate(),
       local: true,
     });
   }
@@ -111,8 +111,8 @@ export default class MetricsTable extends React.Component {
       }
     });
     var ths = columns.map(column => {
-      var label = column.middle.format('M/D');
-      var highlighted = this.state.highlighted_date.isBetween(column.start, column.end);
+      var label = column.start.format('M/D');
+      var highlighted = this.state.highlighted_moment.isBetween(column.start, column.end);
       var thClassName = highlighted ? 'highlighted' : '';
       return <th key={label} className={thClassName}>{label}</th>;
     });
@@ -130,12 +130,16 @@ export default class MetricsTable extends React.Component {
               onMouseDown={this.onDeleteAction.bind(this, action.action_id)}>I</span>;
           });
         }
-        var highlighted = this.state.highlighted_date.isBetween(column.start, column.end);
+        var highlighted = this.state.highlighted_moment.isBetween(column.start, column.end);
         var tdClassName = highlighted ? 'highlighted' : '';
         var td_key = column.middle.toISOString();
+        // if the column is highlighted (is today), use the exact current highlighted_moment
+        var started_moment = highlighted ? this.state.highlighted_moment : column.middle;
+        var ended_moment = started_moment;
         return (
           <td key={td_key} className={tdClassName}>
-            <div className="cell" onMouseDown={this.onAddAction.bind(this, actiontype.actiontype_id, column.middle)}>
+            <div className="cell" onMouseDown={this.onAddAction.bind(this,
+                actiontype.actiontype_id, started_moment, ended_moment)}>
               {spans}
             </div>
           </td>

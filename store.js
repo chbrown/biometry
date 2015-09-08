@@ -9,6 +9,7 @@ Assumes that `actions` is already deduplicated and does not contain deletes.
 Does not mutate `actions`.
 */
 function concatAction(actions, new_action) {
+    // remove any existing actions that have the same action_id
     var filtered_actions = actions.filter(function (action) { return action.action_id !== new_action.action_id; });
     // deleted might be null if it comes from the database, or undefined if from the app
     if (!new_action.deleted) {

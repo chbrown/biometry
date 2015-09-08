@@ -1,18 +1,26 @@
+var path = require('path');
+var express = require('express');
 var webpack = require('webpack');
-var WebpackDevServer = require('webpack-dev-server');
 var config = require('./webpack.config');
 
-var server = new WebpackDevServer(webpack(config), {
-  publicPath: config.output.publicPath,
-  hot: true,
-  historyApiFallback: true
+var app = express();
+var compiler = webpack(config);
+
+app.use(require('webpack-dev-middleware')(compiler, {
+    noInfo: true,
+    publicPath: config.output.publicPath
+}));
+
+app.use(require('webpack-hot-middleware')(compiler));
+
+app.get('*', function(req, res) {
+  res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-server.listen(process.env.PORT, function(err) {
+app.listen(process.env.PORT, 'localhost', function (err) {
   if (err) {
     return console.log(err);
   }
   var address = this.address();
-
   console.log('Listening at %s:%s', address.address, address.port);
 });
