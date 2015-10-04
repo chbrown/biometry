@@ -3,6 +3,12 @@ DTS := async/async moment/moment-node react/react react/react-addons react-route
 
 all: build/bundle.js type_declarations
 
+.INTERMEDIATE: img/favicon-16.png img/favicon-32.png
+img/favicon-%.png: img/favicon.psd
+	convert $<[0] -resize $*x$* $@
+img/favicon.ico: img/favicon-16.png img/favicon-32.png
+	convert $^ $@
+
 type_declarations: $(DTS:%=type_declarations/DefinitelyTyped/%.d.ts)
 type_declarations/DefinitelyTyped/%:
 	mkdir -p $(@D)
@@ -18,7 +24,7 @@ $(BIN)/tsc $(BIN)/watsh:
 	$(BIN)/tsc -m commonjs -t ES5 $<
 
 dev:
-	$(BIN)/watsh 'make site.css' site.less
+	npm run dev
 
-build/bundle.js: webpack.config.js app.jsx
+build/bundle.js: webpack.config.js app.jsx components/MetricsTable.jsx api.js operations.js store.js
 	NODE_ENV=production $(BIN)/webpack --config $<

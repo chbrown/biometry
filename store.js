@@ -19,7 +19,6 @@ function concatAction(actions, new_action) {
 }
 function actionsReducer(actions, operation) {
     if (actions === void 0) { actions = []; }
-    if (operation === void 0) { operation = null; }
     switch (operation.type) {
         case operations_1.OperationType.ADD_ACTIONS:
             return operation.actions.reduce(concatAction, actions);
@@ -29,7 +28,6 @@ function actionsReducer(actions, operation) {
 }
 function actiontypesReducer(actiontypes, operation) {
     if (actiontypes === void 0) { actiontypes = []; }
-    if (operation === void 0) { operation = null; }
     switch (operation.type) {
         case operations_1.OperationType.ADD_ACTIONTYPES:
             return actiontypes.concat(operation.actiontypes);
@@ -37,12 +35,26 @@ function actiontypesReducer(actiontypes, operation) {
             return actiontypes;
     }
 }
-var reducer = redux_1.combineReducers({ actions: actionsReducer, actiontypes: actiontypesReducer });
+function nowReducer(now, operation) {
+    if (now === void 0) { now = new Date(); }
+    switch (operation.type) {
+        case operations_1.OperationType.SET_NOW:
+            return operation.date;
+        default:
+            return now;
+    }
+}
+var reducer = redux_1.combineReducers({
+    actions: actionsReducer,
+    actiontypes: actiontypesReducer,
+    now: nowReducer,
+});
 // same as:
 // let reducer = function(state, operation) {
 //   return {
 //     actions: actionsReducer(state.actions, operation),
 //     actiontypes: actiontypesReducer(state.actiontypes, operation),
+//     ...
 //   };
 // }
 var loggerMiddleware = function (store) { return function (next) { return function (operation) {

@@ -15,6 +15,19 @@ function randInt() {
   return (new Date() % 10000000) * 1000 + (Math.random() * 1000 | 0);
 }
 
+function groupBy(xs, keyFn) {
+  var hash = {};
+  xs.forEach(x => {
+    var key = keyFn(x);
+    var list = hash[key];
+    if (list === undefined) {
+      list = hash[key] = [];
+    }
+    list.push(x);
+  });
+  return hash;
+}
+
 function createRange(start: moment.Moment, end: moment.Moment, duration: moment.Duration): moment.Moment[] {
   var range: moment.Moment[] = [];
   var cursor = start.clone();
@@ -22,26 +35,20 @@ function createRange(start: moment.Moment, end: moment.Moment, duration: moment.
     range.push(cursor.clone());
     cursor.add(duration);
   } while (cursor.isBefore(end));
-  range.push(end.clone());
+  // range.push(end.clone());
   return range;
 }
 
 /**
-store props {
-  actions: Action[];
-  actiontypes: Actiontype[];
+props {
   start: moment.Moment;
   end: moment.Moment;
 }
 */
-@connect(state => ({actions: state.actions, actiontypes: state.actiontypes}))
+@connect(state => ({actions: state.actions, actiontypes: state.actiontypes, now: state.now}))
 export default class MetricsTable extends React.Component {
   constructor(props) {
     super(props);
-    // optional things that props may or may not provide are coalesced as state variables
-    this.state = {
-      highlighted_moment: props.highlighted_moment || moment(),
-    };
   }
   componentDidMount() {
     fetchActions((error, actions) => {
@@ -103,6 +110,11 @@ export default class MetricsTable extends React.Component {
   }
   render() {
     var range_moments = createRange(this.props.start, this.props.end, moment.duration(1, 'day'));
+    // filter down to only the actions within this timeframe
+    var actions = this.props.actions.filter(action =>
+      this.props.start.isBefore(action.started) && this.props.end.isAfter(action.ended));
+    // and group them by actiontype_id
+    var actions_hashmap = groupBy(actions, action => action.actiontype_id);
     var columns = range_moments.map(range_moment => {
       return {
         start: range_moment,
@@ -110,14 +122,15 @@ export default class MetricsTable extends React.Component {
         end: range_moment.clone().add(1, 'day'),
       }
     });
+    var highlighted_moment = moment(this.props.now);
     var ths = columns.map(column => {
       var label = column.start.format('M/D');
-      var highlighted = this.state.highlighted_moment.isBetween(column.start, column.end);
+      var highlighted = highlighted_moment.isBetween(column.start, column.end);
       var thClassName = highlighted ? 'highlighted' : '';
       return <th key={label} className={thClassName}>{label}</th>;
     });
     var trs = this.props.actiontypes.map(actiontype => {
-      var actiontype_actions = this.props.actions.filter(action => action.actiontype_id == actiontype.actiontype_id);
+      var actiontype_actions = actions_hashmap[actiontype.actiontype_id] || [];
       var tds = columns.map(column => {
         var actions = actiontype_actions.filter(action =>
           column.start.isBefore(action.started) && column.end.isAfter(action.ended));
@@ -130,11 +143,11 @@ export default class MetricsTable extends React.Component {
               onMouseDown={this.onDeleteAction.bind(this, action.action_id)}>I</span>;
           });
         }
-        var highlighted = this.state.highlighted_moment.isBetween(column.start, column.end);
+        var highlighted = highlighted_moment.isBetween(column.start, column.end);
         var tdClassName = highlighted ? 'highlighted' : '';
         var td_key = column.middle.toISOString();
         // if the column is highlighted (is today), use the exact current highlighted_moment
-        var started_moment = highlighted ? this.state.highlighted_moment : column.middle;
+        var started_moment = highlighted ? highlighted_moment : column.middle;
         var ended_moment = started_moment;
         return (
           <td key={td_key} className={tdClassName}>

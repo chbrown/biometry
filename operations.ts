@@ -4,12 +4,11 @@ import {Action, Actiontype} from './store';
 export const OperationType = {
   ADD_ACTIONS: 'ADD_ACTIONS',
   ADD_ACTIONTYPES: 'ADD_ACTIONTYPES',
+  SET_NOW: 'SET_NOW',
 };
 export interface Operation {
   type: string;
   actions?: Action[];
   actiontypes?: Actiontype[];
-}
-export interface AsyncOperation {
-  (dispatch: (operation: Operation | Function) => any, getState: Function): any;
+  date?: Date;
 }

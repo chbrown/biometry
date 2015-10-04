@@ -58,7 +58,7 @@ function concatAction(actions: Action[], new_action: Action) {
   return filtered_actions;
 }
 
-function actionsReducer(actions: Action[] = [], operation: Operation = null) {
+function actionsReducer(actions: Action[] = [], operation: Operation) {
   switch (operation.type) {
   case OperationType.ADD_ACTIONS:
     return operation.actions.reduce(concatAction, actions);
@@ -67,7 +67,7 @@ function actionsReducer(actions: Action[] = [], operation: Operation = null) {
   }
 }
 
-function actiontypesReducer(actiontypes: Actiontype[] = [], operation: Operation = null) {
+function actiontypesReducer(actiontypes: Actiontype[] = [], operation: Operation) {
   switch (operation.type) {
   case OperationType.ADD_ACTIONTYPES:
     return actiontypes.concat(operation.actiontypes);
@@ -76,12 +76,26 @@ function actiontypesReducer(actiontypes: Actiontype[] = [], operation: Operation
   }
 }
 
-let reducer = combineReducers({actions: actionsReducer, actiontypes: actiontypesReducer});
+function nowReducer(now: Date = new Date(), operation: Operation) {
+  switch (operation.type) {
+  case OperationType.SET_NOW:
+    return operation.date;
+  default:
+    return now;
+  }
+}
+
+let reducer = combineReducers({
+  actions: actionsReducer,
+  actiontypes: actiontypesReducer,
+  now: nowReducer,
+});
 // same as:
 // let reducer = function(state, operation) {
 //   return {
 //     actions: actionsReducer(state.actions, operation),
 //     actiontypes: actiontypesReducer(state.actiontypes, operation),
+//     ...
 //   };
 // }
 
