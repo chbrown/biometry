@@ -1,5 +1,6 @@
-/// <reference path="type_declarations/index.d.ts" />
-import {combineReducers, createStore, applyMiddleware} from 'redux';
+import {createHashHistory} from 'history';
+import {combineReducers, compose, createStore, applyMiddleware} from 'redux';
+import {reduxReactRouter, routerStateReducer} from 'redux-router';
 import * as moment from 'moment';
 
 import {OperationType, Operation} from './operations';
@@ -85,36 +86,17 @@ function nowReducer(now: Date = new Date(), operation: Operation) {
   }
 }
 
-let reducer = combineReducers({
+const reducer = combineReducers({
+  router: routerStateReducer,
   actions: actionsReducer,
   actiontypes: actiontypesReducer,
   now: nowReducer,
 });
-// same as:
-// let reducer = function(state, operation) {
-//   return {
-//     actions: actionsReducer(state.actions, operation),
-//     actiontypes: actiontypesReducer(state.actiontypes, operation),
-//     ...
-//   };
-// }
 
-const loggerMiddleware = store => next => operation => {
-  console.group(operation.type);
-  console.info('dispatching', operation);
-  let result = next(operation);
-  console.log('next state', store.getState());
-  console.groupEnd();
-  return result;
-};
-const thunkMiddleware = store => next => operation => {
-  // pass along non-function operations without modification
-  if (typeof operation !== 'function') {
-    return next(operation);
-  }
-  // otherwise call the function like so:
-  return operation(store.dispatch, store.getState);
-};
-// let createStoreWithMiddleware = applyMiddleware(loggerMiddleware, thunkMiddleware)(createStore);
-// let createStoreWithMiddleware = applyMiddleware(thunkMiddleware)(createStore);
-export let store = createStore(reducer);
+function createHistory() {
+  return createHashHistory({queryKey: false});
+}
+
+export default compose(
+  reduxReactRouter({createHistory})
+)(createStore)(reducer);

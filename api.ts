@@ -1,4 +1,3 @@
-/// <reference path="type_declarations/index.d.ts" />
 import * as async from 'async';
 import {Request} from 'httprequest';
 import {Action, ActionJSON, Actiontype} from './store';

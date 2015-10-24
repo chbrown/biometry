@@ -1,4 +1,3 @@
-/// <reference path="type_declarations/index.d.ts" />
 import {Action, Actiontype} from './store';
 
 export const OperationType = {

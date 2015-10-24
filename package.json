@@ -14,36 +14,35 @@
   "license": "MIT",
   "private": true,
   "dependencies": {
-    "react": "*"
+    "async": "*",
+    "history": "*",
+    "httprequest": "*",
+    "moment": "*",
+    "react": "*",
+    "react-dom": "*",
+    "react-redux": "*",
+    "react-router": "^1.0.0-rc1",
+    "redux": "*",
+    "redux-router": "latest"
   },
   "devDependencies": {
-    "async": "*",
     "babel-core": "*",
     "babel-loader": "*",
     "babel-plugin-react-transform": "*",
     "css-loader": "*",
     "express": "*",
-    "httprequest": "*",
     "less": "*",
     "less-loader": "*",
-    "lodash": "*",
-    "moment": "*",
     "react-hot-loader": "*",
-    "react-redux": "*",
-    "react-router": "*",
-    "react-transform-webpack-hmr": "*",
     "react-transform-catch-errors": "*",
-    "redux": "*",
+    "react-transform-hmr": "*",
     "redux-devtools": "*",
     "style-loader": "*",
-    "typescript": "next",
-    "watsh": "*",
+    "ts-loader": "*",
+    "typescript": "1.7.0-dev.20151006",
     "webpack": "*",
     "webpack-dev-middleware": "*",
     "webpack-dev-server": "*",
     "webpack-hot-middleware": "*"
-  },
-  "scripts": {
-    "dev": "PORT=8080 node webpack-dev-server.js"
   }
 }

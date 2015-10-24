@@ -1,4 +1,3 @@
-/*jslint esnext: true */
 import moment from 'moment';
 import React from 'react';
 import {connect} from 'react-redux';
@@ -99,7 +98,7 @@ export default class MetricsTable extends React.Component {
     // stop form submit
     event.preventDefault();
     // get input name
-    var input = React.findDOMNode(this.refs.actiontypeName);
+    var input = this.refs.actiontypeName;
     var name = input.value;
     var actiontypes = [{name}];
     syncActiontypes(actiontypes, (error, actiontypes) => {
@@ -120,7 +119,7 @@ export default class MetricsTable extends React.Component {
         start: range_moment,
         middle: range_moment.clone().add(12, 'hour'),
         end: range_moment.clone().add(1, 'day'),
-      }
+      };
     });
     var highlighted_moment = moment(this.props.now);
     var ths = columns.map(column => {

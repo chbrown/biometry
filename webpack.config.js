@@ -15,12 +15,13 @@ var entry = production ? [
 var plugins = [
   // exclude Moment locales (400 kB)
   new webpack.IgnorePlugin(/^\.\/locale$/, [/moment$/]),
-  new webpack.HotModuleReplacementPlugin(),
-  new webpack.NoErrorsPlugin()
 ].concat(production ? [
   new webpack.optimize.UglifyJsPlugin(),
   new webpack.optimize.OccurenceOrderPlugin(),
-] : []);
+] : [
+  new webpack.HotModuleReplacementPlugin(),
+  new webpack.NoErrorsPlugin(),
+]);
 
 module.exports = {
   devtool: devtool,
@@ -35,19 +36,27 @@ module.exports = {
     extensions: [
       '',
       '.js',
-      '.jsx'
+      '.jsx',
+      '.ts',
     ],
   },
   module: {
     loaders: [
       {
-        test: /\.less$/,
-        loaders: ['style-loader', 'css-loader', 'less-loader'],
+        test: /\.ts$/,
+        loaders: ['ts-loader'],
+        include: __dirname,
+        exclude: /node_modules/,
       },
       {
         test: /\.jsx$/,
-        loaders: ['babel'],
+        loaders: ['babel-loader'],
         include: __dirname,
+        exclude: /node_modules/,
+      },
+      {
+        test: /\.less$/,
+        loaders: ['style-loader', 'css-loader', 'less-loader'],
       },
     ],
   }
