@@ -14,7 +14,8 @@ export default class RecentActions extends React.Component {
   render() {
     var actions = this.props.actions.slice(-this.state.limit).reverse();
     var action_divs = actions.map(action => {
-      var actiontype = this.props.actiontypes.filter(actiontype => actiontype.actiontype_id == action.actiontype_id)[0];
+      var actiontype = this.props.actiontypes.filter(actiontype =>
+        actiontype.actiontype_id == action.actiontype_id)[0];
       var duration = (action.started - action.ended) === 0
         ? moment(action.started).format(this.state.format)
         : `${moment(action.started).format(this.state.format)}-${moment(action.ended).format(this.state.format)}`;
