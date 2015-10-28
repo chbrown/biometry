@@ -52,17 +52,11 @@ export default class MetricsTable extends React.Component {
   componentDidMount() {
     fetchActions((error, actions) => {
       if (error) return console.error('fetchActions error', error);
-      this.props.dispatch({
-        type: OperationType.ADD_ACTIONS,
-        actions,
-      });
+      this.props.dispatch({type: OperationType.ADD_ACTIONS, actions});
     });
     fetchActiontypes((error, actiontypes) => {
       if (error) return console.error('fetchActiontypes error', error);
-      this.props.dispatch({
-        type: OperationType.ADD_ACTIONTYPES,
-        actiontypes,
-      });
+      this.props.dispatch({type: OperationType.ADD_ACTIONTYPES, actiontypes});
     });
   }
   syncActions(...actions) {
