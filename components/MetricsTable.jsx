@@ -139,8 +139,9 @@ export default class MetricsTable extends React.Component {
         var highlighted = highlighted_moment.isBetween(column.start, column.end);
         var tdClassName = highlighted ? 'highlighted' : '';
         var td_key = column.middle.toISOString();
-        // if the column is highlighted (is today), use the exact current highlighted_moment
-        var started_moment = highlighted ? highlighted_moment : column.middle;
+        // if the column is highlighted (is today), use the actual current time
+        // FIXME: is there a better way to handle this with store state?
+        var started_moment = highlighted ? moment() : column.middle;
         var ended_moment = started_moment;
         return (
           <td key={td_key} className={tdClassName}>
