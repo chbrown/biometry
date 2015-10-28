@@ -25,10 +25,8 @@ class App extends React.Component {
     document.addEventListener('visibilitychange', () => {
       /** document.visibilityState will be either 'hidden' or 'visible' */
       if (document.visibilityState === 'visible') {
-        this.props.dispatch({
-          type: OperationType.SET_NOW,
-          date: new Date(),
-        });
+        var date = new Date();
+        this.props.dispatch({type: OperationType.SET_NOW, date});
       }
     });
   }
