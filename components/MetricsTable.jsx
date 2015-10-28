@@ -71,6 +71,8 @@ export default class MetricsTable extends React.Component {
       syncActions(actions, (error, actions) => {
         if (error) return console.error('syncActions error', error);
         this.props.dispatch({type: OperationType.ADD_ACTIONS, actions});
+        var date = new Date();
+        this.props.dispatch({type: OperationType.SET_NOW, date});
       });
     });
   }
