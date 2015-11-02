@@ -26,10 +26,11 @@
     "redux-router": "latest"
   },
   "devDependencies": {
-    "babel-core": "*",
-    "babel-loader": "*",
+    "babel-core": "^5.0.0",
+    "babel-loader": "^5.0.0",
     "babel-plugin-react-transform": "*",
     "css-loader": "*",
+    "declarations": "*",
     "express": "*",
     "less": "*",
     "less-loader": "*",
