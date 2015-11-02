@@ -43,7 +43,14 @@ class Actions extends React.Component {
   render() {
     var query = this.props.location.query;
     var end = query.end ? moment(query.end, 'YYYY-MM-DD') : moment().endOf('day');
-    var start = query.start ? moment(query.start, 'YYYY-MM-DD') : end.clone().startOf('month');
+    var start = query.start ? moment(query.start, 'YYYY-MM-DD') : null;
+    if (start === null) {
+      start = end.clone().startOf('month');
+      // push back start a little more if it's too short
+      if (end.diff(start, 'd') < 14) {
+        start.subtract(14, 'd');
+      }
+    }
     return (
       <main>
         <section className="hpad">
