@@ -5,9 +5,6 @@ all: build/bundle.js
 $(BIN)/tsc $(BIN)/webpack:
 	npm install
 
-%.min.js: %.js
-	closure-compiler --language_in ECMASCRIPT5 --warning_level QUIET $< >$@
-
 %.js: %.ts $(BIN)/tsc
 	$(BIN)/tsc
 
