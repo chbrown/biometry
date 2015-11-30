@@ -1,4 +1,4 @@
-import * as async from 'async';
+import {map as asyncMap} from 'async';
 import {Request} from 'httprequest';
 import {Action, ActionJSON, Actiontype} from './store';
 
@@ -9,7 +9,7 @@ function flatten<T>(arrays: T[][]): T[] {
 }
 
 export function syncActions(actions: Action[], callback: (error: Error, actions?: Action[]) => void) {
-  async.map(actions, (action, callback: any) => {
+  asyncMap(actions, (action, callback: any) => {
     var resource_id = (action.action_id > 0) ? action.action_id : '';
     new Request('POST', metry_host + '/actions/' + resource_id)
     .sendJSON(action, (error: Error, synced_action_json: ActionJSON) => {
@@ -33,7 +33,7 @@ export function syncActions(actions: Action[], callback: (error: Error, actions?
 Simpler than syncActions since we don't handle unsynced actiontypes.
 */
 export function syncActiontypes(actiontypes: Actiontype[], callback: (error: Error, actiontypes?: Actiontype[]) => void) {
-  async.map(actiontypes, (actiontype, callback: any) => {
+  asyncMap(actiontypes, (actiontype, callback: any) => {
     new Request('POST', metry_host + '/actiontypes/' + (actiontype.actiontype_id || ''))
     .sendJSON(actiontype, callback);
   }, callback);
