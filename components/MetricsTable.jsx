@@ -119,7 +119,7 @@ export default class MetricsTable extends React.Component {
     });
     var highlighted_moment = moment(this.props.now);
     var ths = columns.map(column => {
-      var label = column.start.format('M/D');
+      var label = column.start.format('M/D ddd');
       var highlighted = highlighted_moment.isBetween(column.start, column.end);
       var thClassName = highlighted ? 'highlighted' : '';
       return <th key={label} className={thClassName}>{label}</th>;
