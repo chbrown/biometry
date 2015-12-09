@@ -46,11 +46,9 @@ props {
 */
 @connect(state => ({actions: state.actions, actiontypes: state.actiontypes, now: state.now}))
 export default class MetricsTable extends React.Component {
-  constructor(props) {
-    super(props);
-  }
   componentDidMount() {
-    fetchActions((error, actions) => {
+    let {start, end} = this.props;
+    fetchActions({start, end}, (error, actions) => {
       if (error) return console.error('fetchActions error', error);
       this.props.dispatch({type: OperationType.ADD_ACTIONS, actions});
     });

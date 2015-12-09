@@ -1,12 +1,10 @@
 import {map as asyncMap} from 'async';
+import * as moment from 'moment';
+import {flatten} from 'tarry';
 import {Request} from 'httprequest';
 import {Action, ActionJSON, Actiontype} from './store';
 
 const metry_host = 'https://metry';
-
-function flatten<T>(arrays: T[][]): T[] {
-  return Array.prototype.concat.apply([], arrays);
-}
 
 export function syncActions(actions: Action[], callback: (error: Error, actions?: Action[]) => void) {
   asyncMap(actions, (action, callback: any) => {
@@ -34,7 +32,7 @@ Simpler than syncActions since we don't handle unsynced actiontypes.
 */
 export function syncActiontypes(actiontypes: Actiontype[], callback: (error: Error, actiontypes?: Actiontype[]) => void) {
   asyncMap(actiontypes, (actiontype, callback: any) => {
-    new Request('POST', metry_host + '/actiontypes/' + (actiontype.actiontype_id || ''))
+    new Request('POST', `${metry_host}/actiontypes/${actiontype.actiontype_id || ''}`)
     .sendJSON(actiontype, callback);
   }, callback);
 }
@@ -51,8 +49,10 @@ function raiseAction(action: ActionJSON): Action {
   };
 }
 
-export function fetchActions(callback: (error: Error, actions?: Action[]) => void) {
-  new Request('GET', metry_host + '/actions').send((error, actions_json: ActionJSON[]) => {
+export function fetchActions({start, end}: {start?: moment.Moment, end?: moment.Moment},
+                             callback: (error: Error, actions?: Action[]) => void) {
+  new Request('GET', `${metry_host}/actions?start=${start.toISOString()}&end=${end.toISOString()}`)
+  .send((error, actions_json: ActionJSON[]) => {
     if (error) return callback(error);
     var actions = actions_json.map(raiseAction);
     callback(null, actions);
