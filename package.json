@@ -21,9 +21,7 @@
     "react": "*",
     "react-dom": "*",
     "react-redux": "*",
-    "react-router": "*",
     "redux": "*",
-    "redux-router": "latest",
     "tarry": "*"
   },
   "devDependencies": {

@@ -8,9 +8,7 @@
     "node_modules/declarations/async/async.d.ts",
     "node_modules/declarations/moment/moment-node.d.ts",
     "node_modules/declarations/react/react.d.ts",
-    "node_modules/declarations/react-router/react-router.d.ts",
     "node_modules/declarations/redux/redux.d.ts",
-    "shims.d.ts",
     "api.ts",
     "operations.ts",
     "store.ts"

@@ -2,15 +2,12 @@ import moment from 'moment';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {Provider, connect} from 'react-redux';
-import {Route, IndexRoute} from 'react-router';
-import {ReduxRouter} from 'redux-router';
 
 import store from './store';
 import {OperationType} from './operations';
 import MetricsTable from './components/MetricsTable';
 import RecentActions from './components/RecentActions';
 
-// uh, this is a weird way to add styles, but okay
 import './site.less';
 
 @connect(state => ({now: state.now}))
@@ -31,19 +28,8 @@ class App extends React.Component {
     });
   }
   render() {
-    return (
-      <div>
-        {this.props.children}
-      </div>
-    );
-  }
-}
-
-class Actions extends React.Component {
-  render() {
-    var query = this.props.location.query;
-    var end = query.end ? moment(query.end, 'YYYY-MM-DD') : moment().endOf('day');
-    var start = query.start ? moment(query.start, 'YYYY-MM-DD') : null;
+    var end = moment().endOf('day');
+    var start = null;
     if (start === null) {
       start = end.clone().startOf('month');
       // push back start a little more if it's too short
@@ -65,19 +51,8 @@ class Actions extends React.Component {
   }
 }
 
-class NotFound extends React.Component {
-  render() {
-    return <h1 className="hpad">Oh noes, route not found: {this.props.routeParams.splat}</h1>;
-  }
-}
-
 ReactDOM.render((
   <Provider store={store}>
-    <ReduxRouter>
-      <Route path="/" component={App}>
-        <IndexRoute component={Actions} />
-        <Route path="*" component={NotFound} />
-      </Route>
-    </ReduxRouter>
+    <App />
   </Provider>
 ), document.getElementById('app'));

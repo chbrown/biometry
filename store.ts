@@ -1,6 +1,4 @@
-import {createHashHistory} from 'history';
 import {combineReducers, compose, createStore, applyMiddleware} from 'redux';
-import {reduxReactRouter, routerStateReducer} from 'redux-router';
 import * as moment from 'moment';
 
 import {OperationType, Operation} from './operations';
@@ -87,16 +85,11 @@ function nowReducer(now: Date = new Date(), operation: Operation) {
 }
 
 const reducer = combineReducers({
-  router: routerStateReducer,
   actions: actionsReducer,
   actiontypes: actiontypesReducer,
   now: nowReducer,
 });
 
-function createHistory() {
-  return createHashHistory({queryKey: false});
-}
+const store = createStore(reducer);
 
-export default compose(
-  reduxReactRouter({createHistory})
-)(createStore)(reducer);
+export default store;
