@@ -44,7 +44,7 @@ module.exports = {
     loaders: [
       {
         test: /\.ts$/,
-        loaders: ['ts-loader'],
+        loaders: ['babel-loader', 'ts-loader'],
         include: __dirname,
         exclude: /node_modules/,
       },
