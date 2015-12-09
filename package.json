@@ -23,7 +23,8 @@
     "react-redux": "*",
     "react-router": "*",
     "redux": "*",
-    "redux-router": "latest"
+    "redux-router": "latest",
+    "tarry": "*"
   },
   "devDependencies": {
     "babel-core": "^5.0.0",
@@ -40,7 +41,7 @@
     "redux-devtools": "*",
     "style-loader": "*",
     "ts-loader": "*",
-    "typescript": "1.7.0-dev.20151006",
+    "typescript": "*",
     "webpack": "*",
     "webpack-dev-middleware": "*",
     "webpack-dev-server": "*",
