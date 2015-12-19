@@ -14,15 +14,12 @@
   "license": "MIT",
   "private": true,
   "dependencies": {
-    "async": "*",
     "history": "*",
-    "httprequest": "*",
     "moment": "*",
     "react": "*",
     "react-dom": "*",
     "react-redux": "*",
-    "redux": "*",
-    "tarry": "*"
+    "redux": "*"
   },
   "devDependencies": {
     "babel-core": "^5.0.0",

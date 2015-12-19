@@ -1,23 +1,13 @@
-import moment from 'moment';
 import React from 'react';
-import ReactDOM from 'react-dom';
-import {Provider, connect} from 'react-redux';
+import moment from 'moment';
+import {connect} from 'react-redux';
 
-import store from './store';
-import {OperationType} from './operations';
-import MetricsTable from './components/MetricsTable';
-import RecentActions from './components/RecentActions';
-
-import './site.less';
+import MetricsTable from './MetricsTable';
+import RecentActions from './RecentActions';
+import {OperationType} from '../types';
 
 @connect(state => ({now: state.now}))
-class App extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      visibility: 'visible',
-    };
-  }
+export default class App extends React.Component {
   componentDidMount() {
     document.addEventListener('visibilitychange', () => {
       /** document.visibilityState will be either 'hidden' or 'visible' */
@@ -50,9 +40,3 @@ class App extends React.Component {
     );
   }
 }
-
-ReactDOM.render((
-  <Provider store={store}>
-    <App />
-  </Provider>
-), document.getElementById('app'));

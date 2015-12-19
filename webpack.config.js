@@ -6,18 +6,18 @@ var production = process.env.NODE_ENV == 'production';
 var devtool = production ? undefined : 'eval'; // 'source-map',
 
 var entry = production ? [
-  './app',
+  './index',
 ] : [
   'webpack-hot-middleware/client',
-  './app',
+  './index',
 ];
 
 var plugins = [
   // exclude Moment locales (400 kB)
   new webpack.IgnorePlugin(/^\.\/locale$/, [/moment$/]),
 ].concat(production ? [
-  new webpack.optimize.UglifyJsPlugin(),
   new webpack.optimize.OccurenceOrderPlugin(),
+  new webpack.optimize.UglifyJsPlugin(),
 ] : [
   new webpack.HotModuleReplacementPlugin(),
   new webpack.NoErrorsPlugin(),
@@ -29,7 +29,7 @@ module.exports = {
   output: {
     path: path.join(__dirname, 'build'),
     filename: 'bundle.js',
-    publicPath: '/build/'
+    publicPath: '/build/',
   },
   plugins: plugins,
   resolve: {
@@ -59,5 +59,5 @@ module.exports = {
         loaders: ['style-loader', 'css-loader', 'less-loader'],
       },
     ],
-  }
+  },
 };

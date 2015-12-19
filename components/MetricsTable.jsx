@@ -1,14 +1,14 @@
 import moment from 'moment';
 import React from 'react';
 import {connect} from 'react-redux';
-import {fetchActions, fetchActiontypes, syncActions, syncActiontypes} from '../api';
-import {OperationType} from '../operations';
+import {metry_host, OperationType, Action, ActionJSON, raiseAction, Actiontype} from '../types';
 
 /**
-Return a mixture of day-granularity timestamp (meaning, it will repeat from
+@returns {number} A mixture of day-granularity timestamp (meaning, it will repeat from
 one day to the next) and randomness, but still considerably smaller than the
 maximum safe integer. It will be positive.
-// const MAX_SAFE_INTEGER = Number.MAX_SAFE_INTEGER || 9007199254740991;
+
+P.S. const MAX_SAFE_INTEGER = Number.MAX_SAFE_INTEGER || 9007199254740991;
 */
 function randInt() {
   return (new Date() % 10000000) * 1000 + (Math.random() * 1000 | 0);
@@ -38,24 +38,59 @@ function createRange(start: moment.Moment, end: moment.Moment, duration: moment.
   return range;
 }
 
-/**
-props {
-  start: moment.Moment;
-  end: moment.Moment;
+function fetchActions({start, end}: {start?: moment.Moment, end?: moment.Moment}): Promise<Action[]> {
+  let url = `${metry_host}/actions?start=${start.toISOString()}&end=${end.toISOString()}`;
+  return fetch(url).then(res => res.json())
+  .then((actions_json: ActionJSON) => actions_json.map(raiseAction));
 }
+
+function fetchActiontypes(): Promise<Actiontype[]> {
+  return fetch(`${metry_host}/actiontypes`).then(res => res.json());
+}
+
+function syncActions(actions: Action[]): Promise<Action[]> {
+  Promise.all(actions.map(action => {
+    var resource_id = (action.action_id > 0) ? action.action_id : '';
+    fetch(`${metry_host}/actions/${resource_id}`, {
+      method: 'POST',
+      body: action,
+    })
+    .then(res => res.json())
+    .then(raiseAction)
+    .then((syncedAction: Action) => {
+      // if it was a temporary action, delete the temporary one
+      let deletes = (action.action_id < 0) ? [{action_id: action.action_id, deleted: new Date()}] : [];
+      return [...deletes, syncedAction];
+    });
+  }))
+  .then((actionss: Array<Action[]>) => {
+    return actionss.reduce((actions: Action[], newAction: Action) => actions.concat(newAction), []);
+  });
+}
+
+/**
+Simpler than syncActions since we don't handle unsynced actiontypes.
 */
+function syncActiontypes(actiontypes: Actiontype[]): Promise<Actiontype[]> {
+  return Promise.all(actiontypes.map(actiontype => {
+    return fetch(`${metry_host}/actiontypes/${actiontype.actiontype_id || ''}`, {
+      method: 'POST',
+      body: actiontype,
+    })
+    .then(res => res.json());
+  }));
+}
+
 @connect(state => ({actions: state.actions, actiontypes: state.actiontypes, now: state.now}))
 export default class MetricsTable extends React.Component {
   componentDidMount() {
     let {start, end} = this.props;
-    fetchActions({start, end}, (error, actions) => {
-      if (error) return console.error('fetchActions error', error);
+    Promise.all([fetchActions({start, end}), fetchActiontypes()])
+    .then(([actions, actiontypes]) => {
       this.props.dispatch({type: OperationType.ADD_ACTIONS, actions});
-    });
-    fetchActiontypes((error, actiontypes) => {
-      if (error) return console.error('fetchActiontypes error', error);
       this.props.dispatch({type: OperationType.ADD_ACTIONTYPES, actiontypes});
-    });
+    })
+    .catch(reason => console.error('fetchActions(types) error', reason));
   }
   syncActions(...actions) {
     // sync local actions
@@ -66,12 +101,13 @@ export default class MetricsTable extends React.Component {
     // response comes back). setImmediate seems to have the same effect, timing
     // wise, as requestAnimationFrame.
     setImmediate(() => {
-      syncActions(actions, (error, actions) => {
-        if (error) return console.error('syncActions error', error);
+      syncActions(actions)
+      .then(actions => {
         this.props.dispatch({type: OperationType.ADD_ACTIONS, actions});
         var date = new Date();
         this.props.dispatch({type: OperationType.SET_NOW, date});
-      });
+      })
+      .catch(reason => console.error('syncActions error', reason));
     });
   }
   onAddAction(actiontype_id, started_moment, ended_moment) {
@@ -95,32 +131,34 @@ export default class MetricsTable extends React.Component {
     var input = this.refs.actiontypeName;
     var name = input.value;
     var actiontypes = [{name}];
-    syncActiontypes(actiontypes, (error, actiontypes) => {
-      if (error) return console.error('syncActiontypes error', error);
+    syncActiontypes(actiontypes)
+    .then(actiontypes => {
       this.props.dispatch({type: OperationType.ADD_ACTIONTYPES, actiontypes});
       input.value = '';
-    });
+    })
+    .catch(reason => console.error('syncActiontypes error', reason));
   }
   render() {
-    var range_moments = createRange(this.props.start, this.props.end, moment.duration(1, 'day'));
-    // filter down to only the actions within this timeframe
-    var actions = this.props.actions.filter(action =>
-      this.props.start.isBefore(action.started) && this.props.end.isAfter(action.ended));
-    // and group them by actiontype_id
-    var actions_hashmap = groupBy(actions, action => action.actiontype_id);
-    var columns = range_moments.map(range_moment => {
+    const columns = createRange(this.props.start, this.props.end, moment.duration(1, 'day'))
+    .map(range_moment => {
       return {
         start: range_moment,
         middle: range_moment.clone().add(12, 'hour'),
         end: range_moment.clone().add(1, 'day'),
       };
     });
+    // filter down to only the actions within this timeframe
+    var actions = this.props.actions.filter(action =>
+      this.props.start.isBefore(action.started) && this.props.end.isAfter(action.ended));
+    // and group them by actiontype_id
+    var actions_hashmap = groupBy(actions, action => action.actiontype_id);
     var highlighted_moment = moment(this.props.now);
     var ths = columns.map(column => {
-      var label = column.start.format('M/D ddd');
+      var label = column.start.format('M/D');
+      var day = column.start.format('ddd');
       var highlighted = highlighted_moment.isBetween(column.start, column.end);
       var thClassName = highlighted ? 'highlighted' : '';
-      return <th key={label} className={thClassName}>{label}</th>;
+      return <th key={label} className={thClassName}><div>{label}</div>{day}</th>;
     });
     var trs = this.props.actiontypes.map(actiontype => {
       var actiontype_actions = actions_hashmap[actiontype.actiontype_id] || [];
@@ -178,5 +216,9 @@ export default class MetricsTable extends React.Component {
         </tfoot>
       </table>
     );
+  }
+  static propTypes = {
+    start: React.PropTypes.object.isRequired, // moment.Moment
+    end: React.PropTypes.object.isRequired, // moment.Moment
   }
 }
