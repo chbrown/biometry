@@ -3,6 +3,8 @@ import React from 'react';
 import {connect} from 'react-redux';
 import {metry_host, OperationType, Action, ActionJSON, raiseAction, Actiontype} from '../types';
 
+const defaultHeaders = new Headers({'Content-Type': 'application/json'});
+
 /**
 @returns {number} A mixture of day-granularity timestamp (meaning, it will repeat from
 one day to the next) and randomness, but still considerably smaller than the
@@ -49,11 +51,12 @@ function fetchActiontypes(): Promise<Actiontype[]> {
 }
 
 function syncActions(actions: Action[]): Promise<Action[]> {
-  Promise.all(actions.map(action => {
+  return Promise.all(actions.map(action => {
     var resource_id = (action.action_id > 0) ? action.action_id : '';
-    fetch(`${metry_host}/actions/${resource_id}`, {
+    return fetch(`${metry_host}/actions/${resource_id}`, {
       method: 'POST',
-      body: action,
+      headers: defaultHeaders,
+      body: JSON.stringify(action),
     })
     .then(res => res.json())
     .then(raiseAction)
@@ -104,8 +107,7 @@ export default class MetricsTable extends React.Component {
       syncActions(actions)
       .then(actions => {
         this.props.dispatch({type: OperationType.ADD_ACTIONS, actions});
-        var date = new Date();
-        this.props.dispatch({type: OperationType.SET_NOW, date});
+        this.props.dispatch({type: OperationType.SET_NOW, date: new Date()});
       })
       .catch(reason => console.error('syncActions error', reason));
     });
