@@ -78,7 +78,8 @@ function syncActiontypes(actiontypes: Actiontype[]): Promise<Actiontype[]> {
   return Promise.all(actiontypes.map(actiontype => {
     return fetch(`${metry_host}/actiontypes/${actiontype.actiontype_id || ''}`, {
       method: 'POST',
-      body: actiontype,
+      headers: defaultHeaders,
+      body: JSON.stringify(actiontype),
     })
     .then(res => res.json());
   }));
