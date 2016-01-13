@@ -3,15 +3,6 @@ var webpack = require('webpack');
 
 var production = process.env.NODE_ENV == 'production';
 
-var devtool = production ? undefined : 'eval'; // 'source-map',
-
-var entry = production ? [
-  './index',
-] : [
-  'webpack-hot-middleware/client',
-  './index',
-];
-
 var plugins = [
   // exclude Moment locales (400 kB)
   new webpack.IgnorePlugin(/^\.\/locale$/, [/moment$/]),
@@ -24,8 +15,10 @@ var plugins = [
 ]);
 
 module.exports = {
-  devtool: devtool,
-  entry: entry,
+  devtool: production ? undefined : 'eval', // 'source-map',
+  entry: [
+    './index',
+  ].concat(production ? ['webpack-hot-middleware/client'] : []),
   output: {
     path: path.join(__dirname, 'build'),
     filename: 'bundle.js',
