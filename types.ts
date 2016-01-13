@@ -38,10 +38,16 @@ export interface Actiontype {
   created: Date; // string
 }
 
+export interface Configuration {
+  excludeEmpty: boolean;
+  daysPast: number;
+}
+
 export const OperationType = {
   ADD_ACTIONS: 'ADD_ACTIONS',
   ADD_ACTIONTYPES: 'ADD_ACTIONTYPES',
   SET_NOW: 'SET_NOW',
+  SET_CONFIGURATION: 'SET_CONFIGURATION',
 };
 
 export interface Operation {
@@ -49,6 +55,7 @@ export interface Operation {
   actions?: Action[];
   actiontypes?: Actiontype[];
   date?: Date;
+  configuration?: Configuration;
 }
 
 export function raiseAction(action: ActionJSON): Action {

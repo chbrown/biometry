@@ -1,4 +1,4 @@
-import {OperationType, Operation, Action, Actiontype} from './types';
+import {OperationType, Operation, Action, Actiontype, Configuration} from './types';
 
 /**
 Cull duplicate actions, retaining only the latest. Interpret deletes.
@@ -41,5 +41,21 @@ export function now(now: Date = new Date(), operation: Operation) {
     return operation.date;
   default:
     return now;
+  }
+}
+
+const defaultConfiguration = {
+  daysPast: parseInt(localStorage['daysPast'] || '14', 10),
+  sortAlphabetically: localStorage['sortAlphabetically'] === 'true',
+  excludeEmpty: localStorage['excludeEmpty'] === 'true',
+};
+export function configuration(configuration: Configuration = defaultConfiguration, operation: Operation) {
+  switch (operation.type) {
+  case OperationType.SET_CONFIGURATION:
+    const newConfiguration = Object.assign({}, configuration, operation.configuration);
+    Object.assign(localStorage, newConfiguration);
+    return newConfiguration;
+  default:
+    return configuration;
   }
 }

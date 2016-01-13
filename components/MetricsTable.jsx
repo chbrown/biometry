@@ -85,7 +85,7 @@ function syncActiontypes(actiontypes: Actiontype[]): Promise<Actiontype[]> {
   }));
 }
 
-@connect(state => ({actions: state.actions, actiontypes: state.actiontypes, now: state.now}))
+@connect(({actions, actiontypes, now, configuration}) => ({actions, actiontypes, now, configuration}))
 export default class MetricsTable extends React.Component {
   componentDidMount() {
     let {start, end} = this.props;
@@ -142,7 +142,9 @@ export default class MetricsTable extends React.Component {
     .catch(reason => console.error('syncActiontypes error', reason));
   }
   render() {
-    const columns = createRange(this.props.start, this.props.end, moment.duration(1, 'day'))
+    const {start, end, actions, actiontypes, now, configuration} = this.props;
+    const actions_hashmap = groupBy(actions, action => action.actiontype_id);
+    const columns = createRange(start, end, moment.duration(1, 'day'))
     .map(range_moment => {
       return {
         start: range_moment,
@@ -151,19 +153,22 @@ export default class MetricsTable extends React.Component {
       };
     });
     // filter down to only the actions within this timeframe
-    var actions = this.props.actions.filter(action =>
-      this.props.start.isBefore(action.started) && this.props.end.isAfter(action.ended));
+    // nvm, fetchActions should only retrieve the relevant ones
+    // var actions = this.props.actions.filter(action =>
+    //   start.isBefore(action.started) && end.isAfter(action.ended));
     // and group them by actiontype_id
-    var actions_hashmap = groupBy(actions, action => action.actiontype_id);
-    var highlighted_moment = moment(this.props.now);
-    var ths = columns.map(column => {
-      var label = column.start.format('M/D');
-      var day = column.start.format('ddd');
-      var highlighted = highlighted_moment.isBetween(column.start, column.end);
-      var thClassName = highlighted ? 'highlighted' : '';
-      return <th key={label} className={thClassName}><div>{label}</div>{day}</th>;
-    });
-    var trs = this.props.actiontypes.map(actiontype => {
+    var highlighted_moment = moment(now);
+    var trs = actiontypes.filter(actiontype => {
+      if (configuration.excludeEmpty) {
+        return (actions_hashmap[actiontype.actiontype_id] || []).length > 0;
+      }
+      return true;
+    }).sort((actiontype1, actiontype2) => {
+      if (configuration.sortAlphabetically) {
+        return actiontype1.name.localeCompare(actiontype2.name);
+      }
+      return actiontype1.entered.localeCompare(actiontype2.entered);
+    }).map(actiontype => {
       var actiontype_actions = actions_hashmap[actiontype.actiontype_id] || [];
       var tds = columns.map(column => {
         var actions = actiontype_actions.filter(action =>
@@ -178,14 +183,13 @@ export default class MetricsTable extends React.Component {
           });
         }
         var highlighted = highlighted_moment.isBetween(column.start, column.end);
-        var tdClassName = highlighted ? 'highlighted' : '';
         var td_key = column.middle.toISOString();
         // if the column is highlighted (is today), use the actual current time
         // FIXME: is there a better way to handle this with store state?
         var started_moment = highlighted ? moment() : column.middle;
         var ended_moment = started_moment;
         return (
-          <td key={td_key} className={tdClassName}>
+          <td key={td_key} className={highlighted ? 'highlighted' : ''}>
             <div className="cell" onMouseDown={this.onAddAction.bind(this,
                 actiontype.actiontype_id, started_moment, ended_moment)}>
               {spans}
@@ -203,7 +207,15 @@ export default class MetricsTable extends React.Component {
     return (
       <table>
         <thead>
-          <tr><th>Dates:</th>{ths}</tr>
+          <tr>
+            <th>Dates:</th>
+            {columns.map(column => {
+              var label = column.start.format('M/D');
+              var day = column.start.format('ddd');
+              var highlighted = highlighted_moment.isBetween(column.start, column.end);
+              return <th key={label} className={highlighted ? 'highlighted' : ''}><div>{label}</div>{day}</th>;
+            })}
+          </tr>
         </thead>
         <tbody>
           {trs}

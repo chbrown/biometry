@@ -4,36 +4,29 @@ import {connect} from 'react-redux';
 
 import MetricsTable from './MetricsTable';
 import RecentActions from './RecentActions';
-import {OperationType} from '../types';
+import {ConfigNumber, ConfigCheckbox} from './config';
 
-@connect(state => ({now: state.now}))
+@connect(state => ({configuration: state.configuration}))
 export default class App extends React.Component {
-  componentDidMount() {
-    document.addEventListener('visibilitychange', () => {
-      /** document.visibilityState will be either 'hidden' or 'visible' */
-      if (document.visibilityState === 'visible') {
-        var date = new Date();
-        this.props.dispatch({type: OperationType.SET_NOW, date});
-      }
-    });
-  }
   render() {
+    const {daysPast} = this.props.configuration;
     var end = moment().endOf('day');
-    var start = null;
-    if (start === null) {
-      start = end.clone().startOf('month');
-      // push back start a little more if it's too short
-      if (end.diff(start, 'd') < 14) {
-        start.subtract(14, 'd');
-      }
-    }
+    var start = end.clone().subtract(daysPast, 'd');
     return (
       <main>
+        <div className="hpad vpad flex">
+          <h2>Biometry App</h2>
+          <div>
+            <ConfigNumber label="Days Past" name="daysPast" />
+            <ConfigCheckbox label="Sort Alphabetically" name="sortAlphabetically" />
+            <ConfigCheckbox label="Exclude Empty" name="excludeEmpty" />
+          </div>
+        </div>
         <section className="hpad">
           <MetricsTable start={start} end={end} />
         </section>
         <section className="hpad">
-          <h3>Recent Additions</h3>
+          <h3 className="vpad">Recent Additions</h3>
           <RecentActions limit={10} />
         </section>
       </main>
