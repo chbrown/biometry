@@ -23,7 +23,7 @@
   "devDependencies": {
     "babel-core": "^5.0.0",
     "babel-loader": "^5.0.0",
-    "babel-plugin-react-transform": "*",
+    "babel-plugin-react-transform": "^1.1.0",
     "css-loader": "*",
     "declarations": "*",
     "express": "*",
