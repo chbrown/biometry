@@ -18,7 +18,7 @@ module.exports = {
   devtool: production ? undefined : 'eval', // 'source-map',
   entry: [
     './index',
-  ].concat(production ? ['webpack-hot-middleware/client'] : []),
+  ].concat(production ? [] : ['webpack-hot-middleware/client']),
   output: {
     path: path.join(__dirname, 'build'),
     filename: 'bundle.js',
