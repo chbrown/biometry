@@ -201,6 +201,7 @@ export default class MetricsTable extends React.Component {
         <tr key={actiontype.actiontype_id}>
           <td>{actiontype.name}</td>
           {tds}
+          <td>{actiontype.name}</td>
         </tr>
       );
     });
@@ -215,6 +216,7 @@ export default class MetricsTable extends React.Component {
               var highlighted = highlighted_moment.isBetween(column.start, column.end);
               return <th key={label} className={highlighted ? 'highlighted' : ''}><div>{label}</div>{day}</th>;
             })}
+            <th></th>
           </tr>
         </thead>
         <tbody>
