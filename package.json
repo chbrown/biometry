@@ -32,7 +32,6 @@
     "react-hot-loader": "*",
     "react-transform-catch-errors": "*",
     "react-transform-hmr": "*",
-    "redux-devtools": "*",
     "style-loader": "*",
     "ts-loader": "*",
     "typescript": "*",
