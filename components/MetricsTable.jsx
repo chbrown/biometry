@@ -211,8 +211,8 @@ export default class MetricsTable extends React.Component {
           <tr>
             <th>Dates:</th>
             {columns.map(column => {
-              var label = column.start.format('M/D');
-              var day = column.start.format('ddd');
+              var label = column.middle.format('M/D');
+              var day = column.middle.format('ddd');
               var highlighted = highlighted_moment.isBetween(column.start, column.end);
               return <th key={label} className={highlighted ? 'highlighted' : ''}><div>{label}</div>{day}</th>;
             })}
