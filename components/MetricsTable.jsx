@@ -1,7 +1,7 @@
 import moment from 'moment';
 import React from 'react';
 import {connect} from 'react-redux';
-import {metry_host, OperationType, Action, ActionJSON, raiseAction, Actiontype} from '../types';
+import {metry_host, bind, OperationType, Action, ActionJSON, raiseAction, Actiontype} from '../types';
 
 const defaultHeaders = new Headers({'Content-Type': 'application/json'});
 
@@ -85,6 +85,116 @@ function syncActiontypes(actiontypes: Actiontype[]): Promise<Actiontype[]> {
   }));
 }
 
+function dispatchSyncActions(dispatch, ...actions) {
+  // sync local actions
+  dispatch({type: OperationType.ADD_ACTIONS, actions});
+  // we may not get an immediate rerender of the grayed-out local action
+  // without this async closure (apparently it will group the http request
+  // and redraw into the same frame event, and wait to repaint until the http
+  // response comes back). setImmediate seems to have the same effect, timing
+  // wise, as requestAnimationFrame.
+  setImmediate(() => {
+    syncActions(actions)
+    .then(actions => {
+      dispatch({type: OperationType.ADD_ACTIONS, actions});
+      dispatch({type: OperationType.SET_NOW, date: new Date()});
+    })
+    .catch(reason => console.error('syncActions error', reason));
+  });
+}
+
+@connect()
+class ActionSpan extends React.Component {
+  @bind
+  onDelete(ev) {
+    ev.stopPropagation();
+    // create delete action
+    dispatchSyncActions(this.props.dispatch, {
+      action_id: this.props.action_id,
+      deleted: new Date(),
+      local: true,
+    });
+  }
+  render() {
+    return (
+      <span className={this.props.local ? 'local' : ''} onMouseDown={this.onDelete}>I</span>
+    );
+  }
+  static propTypes = {
+    action_id: React.PropTypes.number.isRequired,
+    local: React.PropTypes.bool,
+    dispatch: React.PropTypes.func.isRequired, // redux store dispatcher
+  }
+}
+
+@connect()
+class ActiontypeCell extends React.Component {
+  @bind
+  onAdd() {
+    const {started_moment, actiontype_id} = this.props;
+    const ended_moment = started_moment;
+    dispatchSyncActions(this.props.dispatch, {
+      actiontype_id,
+      action_id: -randInt(),
+      started: started_moment.toDate(),
+      ended: ended_moment.toDate(),
+      local: true,
+    });
+  }
+  render() {
+    const {actions, highlighted} = this.props;
+    return (
+      <td className={highlighted ? 'highlighted' : ''}>
+        <div className="cell" onMouseDown={this.onAdd}>
+          {(actions.length > 0) ? actions.map(action =>
+            <ActionSpan key={action.action_id} action_id={action.action_id} local={action.local} />
+          ) : '\xA0'}
+        </div>
+      </td>
+    );
+  }
+  static propTypes = {
+    actiontype_id: React.PropTypes.number.isRequired,
+    actions: React.PropTypes.array.isRequired,
+    highlighted: React.PropTypes.bool.isRequired,
+    dispatch: React.PropTypes.func.isRequired, // redux store dispatcher
+    started_moment: React.PropTypes.object.isRequired, // moment.Moment
+    // ended_moment: React.PropTypes.object.isRequired, // moment.Moment
+  }
+}
+
+class ActiontypeRow extends React.Component {
+  render() {
+    const {actiontype, actions, highlighted_moment, columns} = this.props;
+    // the contents should default to non-empty in case there are no actions,
+    // thus, \xA0, which is &nbsp; in hex
+    const cells = columns.map(({start, middle, end}) => {
+      var cellActions = actions.filter(action =>
+        start.isBefore(action.started) && end.isAfter(action.ended));
+      // apparently sometimes webpack's UglifyJS step breaks on \xA0 ?
+      var highlighted = highlighted_moment.isBetween(start, end);
+      // if the column is highlighted (is today), use the actual current time
+      return {key: middle.toISOString(), actions: cellActions, highlighted};
+    });
+    return (
+      <tr>
+        <td>{actiontype.name}</td>
+        {cells.map(({key, actions, highlighted}) =>
+          <ActiontypeCell key={key} actiontype_id={actiontype.actiontype_id}
+            actions={actions} highlighted={highlighted} started_moment={highlighted_moment} />
+        )}
+        <td>{actiontype.name}</td>
+      </tr>
+    );
+  }
+  static propTypes = {
+    actiontype: React.PropTypes.object.isRequired,
+    actions: React.PropTypes.array.isRequired,
+    highlighted_moment: React.PropTypes.object.isRequired, // moment.Moment
+    columns: React.PropTypes.array.isRequired,
+  }
+}
+
 @connect(({actions, actiontypes, now, configuration}) => ({actions, actiontypes, now, configuration}))
 export default class MetricsTable extends React.Component {
   componentDidMount() {
@@ -96,37 +206,7 @@ export default class MetricsTable extends React.Component {
     })
     .catch(reason => console.error('fetchActions(types) error', reason));
   }
-  syncActions(...actions) {
-    // sync local actions
-    this.props.dispatch({type: OperationType.ADD_ACTIONS, actions});
-    // we may not get an immediate rerender of the grayed-out local action
-    // without this async closure (apparently it will group the http request
-    // and redraw into the same frame event, and wait to repaint until the http
-    // response comes back). setImmediate seems to have the same effect, timing
-    // wise, as requestAnimationFrame.
-    setImmediate(() => {
-      syncActions(actions)
-      .then(actions => {
-        this.props.dispatch({type: OperationType.ADD_ACTIONS, actions});
-        this.props.dispatch({type: OperationType.SET_NOW, date: new Date()});
-      })
-      .catch(reason => console.error('syncActions error', reason));
-    });
-  }
-  onAddAction(actiontype_id, started_moment, ended_moment) {
-    this.syncActions({
-      actiontype_id,
-      action_id: -randInt(),
-      started: started_moment.toDate(),
-      ended: ended_moment.toDate(),
-      local: true,
-    });
-  }
-  onDeleteAction(action_id, event) {
-    event.stopPropagation();
-    // create delete action
-    this.syncActions({action_id, deleted: new Date(), local: true});
-  }
+  @bind
   onAddActiontype(event) {
     // stop form submit
     event.preventDefault();
@@ -158,7 +238,7 @@ export default class MetricsTable extends React.Component {
     //   start.isBefore(action.started) && end.isAfter(action.ended));
     // and group them by actiontype_id
     var highlighted_moment = moment(now);
-    var trs = actiontypes.filter(actiontype => {
+    var actiontypesWithActions = actiontypes.filter(actiontype => {
       if (configuration.excludeEmpty) {
         return (actions_hashmap[actiontype.actiontype_id] || []).length > 0;
       }
@@ -169,41 +249,8 @@ export default class MetricsTable extends React.Component {
       }
       return actiontype1.entered.localeCompare(actiontype2.entered);
     }).map(actiontype => {
-      var actiontype_actions = actions_hashmap[actiontype.actiontype_id] || [];
-      var tds = columns.map(column => {
-        var actions = actiontype_actions.filter(action =>
-          column.start.isBefore(action.started) && column.end.isAfter(action.ended));
-        // the contents should default to non-empty in case there are no actions
-        var spans = '\xA0'; // A0 is &nbsp; in hex
-        // apparently sometimes webpack's UglifyJS step breaks on \xA0 ?
-        if (actions.length) {
-          spans = actions.map(action => {
-            return <span key={action.action_id} className={action.local ? 'local' : ''}
-              onMouseDown={this.onDeleteAction.bind(this, action.action_id)}>I</span>;
-          });
-        }
-        var highlighted = highlighted_moment.isBetween(column.start, column.end);
-        var td_key = column.middle.toISOString();
-        // if the column is highlighted (is today), use the actual current time
-        // FIXME: is there a better way to handle this with store state?
-        var started_moment = highlighted ? moment() : column.middle;
-        var ended_moment = started_moment;
-        return (
-          <td key={td_key} className={highlighted ? 'highlighted' : ''}>
-            <div className="cell" onMouseDown={this.onAddAction.bind(this,
-                actiontype.actiontype_id, started_moment, ended_moment)}>
-              {spans}
-            </div>
-          </td>
-        );
-      });
-      return (
-        <tr key={actiontype.actiontype_id}>
-          <td>{actiontype.name}</td>
-          {tds}
-          <td>{actiontype.name}</td>
-        </tr>
-      );
+      var actiontypeActions = actions_hashmap[actiontype.actiontype_id] || [];
+      return {actiontype, actions: actiontypeActions};
     });
     return (
       <table>
@@ -214,18 +261,26 @@ export default class MetricsTable extends React.Component {
               var label = column.middle.format('M/D');
               var day = column.middle.format('ddd');
               var highlighted = highlighted_moment.isBetween(column.start, column.end);
-              return <th key={label} className={highlighted ? 'highlighted' : ''}><div>{label}</div>{day}</th>;
+              return (
+                <th key={label} className={highlighted ? 'highlighted' : ''}>
+                  <div>{label}</div>{day}
+                </th>
+              );
             })}
             <th></th>
           </tr>
         </thead>
         <tbody>
-          {trs}
+          {actiontypesWithActions.map(({actiontype, actions}) =>
+            <ActiontypeRow key={actiontype.actiontype_id}
+              actiontype={actiontype} actions={actions}
+              highlighted_moment={highlighted_moment} columns={columns} />
+          )}
         </tbody>
         <tfoot>
           <tr>
             <td>
-              <form onSubmit={this.onAddActiontype.bind(this)} className="vpad">
+              <form onSubmit={this.onAddActiontype} className="vpad">
                 <input type="text" ref="actiontypeName" placeholder="New action type" />
               </form>
             </td>
