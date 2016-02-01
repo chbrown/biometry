@@ -1,5 +1,20 @@
 export const metry_host = 'https://metry';
 
+export function bind(target, key, { value: fn }) {
+  return {
+    configurable: true,
+    get() {
+      let value = fn.bind(this);
+      Object.defineProperty(this, key, {
+        value,
+        configurable: true,
+        writable: true
+      });
+      return value;
+    }
+  };
+}
+
 /**
 Action will have a random temporary ID called tmp_id until it is synced with the
 remote database, after which it will receive a unique ID, which overrides the tmp_id.
