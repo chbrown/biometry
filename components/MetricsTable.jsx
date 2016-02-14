@@ -17,10 +17,10 @@ function randInt() {
 }
 
 function groupBy(xs, keyFn) {
-  var hash = {};
+  const hash = {};
   xs.forEach(x => {
-    var key = keyFn(x);
-    var list = hash[key];
+    const key = keyFn(x);
+    let list = hash[key];
     if (list === undefined) {
       list = hash[key] = [];
     }
@@ -30,8 +30,8 @@ function groupBy(xs, keyFn) {
 }
 
 function createRange(start: moment.Moment, end: moment.Moment, duration: moment.Duration): moment.Moment[] {
-  var range: moment.Moment[] = [];
-  var cursor = start.clone();
+  const range: moment.Moment[] = [];
+  const cursor = start.clone();
   do {
     range.push(cursor.clone());
     cursor.add(duration);
@@ -52,7 +52,7 @@ function fetchActiontypes(): Promise<Actiontype[]> {
 
 function syncActions(actions: Action[]): Promise<Action[]> {
   return Promise.all(actions.map(action => {
-    var resource_id = (action.action_id > 0) ? action.action_id : '';
+    const resource_id = (action.action_id > 0) ? action.action_id : '';
     return fetch(`${metry_host}/actions/${resource_id}`, {
       method: 'POST',
       headers: defaultHeaders,
@@ -131,20 +131,26 @@ class ActionSpan extends React.Component {
 class ActiontypeCell extends React.Component {
   @bind
   onAdd() {
-    const {started_moment, actiontype_id} = this.props;
-    const ended_moment = started_moment;
+    const {instant, actiontype_id} = this.props;
+    console.log('ActiontypeCell dispatch', {
+      actiontype_id,
+      action_id: -randInt(),
+      started: instant.toDate(),
+      ended: instant.toDate(),
+      local: true,
+    });
     dispatchSyncActions(this.props.dispatch, {
       actiontype_id,
       action_id: -randInt(),
-      started: started_moment.toDate(),
-      ended: ended_moment.toDate(),
+      started: instant.toDate(),
+      ended: instant.toDate(),
       local: true,
     });
   }
   render() {
-    const {actions, highlighted} = this.props;
+    const {actions, className} = this.props;
     return (
-      <td className={highlighted ? 'highlighted' : ''}>
+      <td className={className}>
         <div className="cell" onMouseDown={this.onAdd}>
           {(actions.length > 0) ? actions.map(action =>
             <ActionSpan key={action.action_id} action_id={action.action_id} local={action.local} />
@@ -156,10 +162,9 @@ class ActiontypeCell extends React.Component {
   static propTypes = {
     actiontype_id: React.PropTypes.number.isRequired,
     actions: React.PropTypes.array.isRequired,
-    highlighted: React.PropTypes.bool.isRequired,
+    className: React.PropTypes.string,
     dispatch: React.PropTypes.func.isRequired, // redux store dispatcher
-    started_moment: React.PropTypes.object.isRequired, // moment.Moment
-    // ended_moment: React.PropTypes.object.isRequired, // moment.Moment
+    instant: React.PropTypes.object.isRequired, // moment.Moment
   }
 }
 
@@ -169,19 +174,20 @@ class ActiontypeRow extends React.Component {
     // the contents should default to non-empty in case there are no actions,
     // thus, \xA0, which is &nbsp; in hex
     const cells = columns.map(({start, middle, end}) => {
-      var cellActions = actions.filter(action =>
+      const cellActions = actions.filter(action =>
         start.isBefore(action.started) && end.isAfter(action.ended));
       // apparently sometimes webpack's UglifyJS step breaks on \xA0 ?
-      var highlighted = highlighted_moment.isBetween(start, end);
+      const highlighted = highlighted_moment.isBetween(start, end);
+      const instant = highlighted ? highlighted_moment : middle;
       // if the column is highlighted (is today), use the actual current time
-      return {key: middle.toISOString(), actions: cellActions, highlighted};
+      return {key: middle.toISOString(), actions: cellActions, highlighted, instant};
     });
     return (
       <tr>
         <td>{actiontype.name}</td>
-        {cells.map(({key, actions, highlighted}) =>
-          <ActiontypeCell key={key} actiontype_id={actiontype.actiontype_id}
-            actions={actions} highlighted={highlighted} started_moment={highlighted_moment} />
+        {cells.map(({key, actions, highlighted, instant}) =>
+          <ActiontypeCell key={key} className={highlighted ? 'highlighted' : ''}
+            actiontype_id={actiontype.actiontype_id} actions={actions} instant={instant} />
         )}
         <td>{actiontype.name}</td>
       </tr>
@@ -191,7 +197,11 @@ class ActiontypeRow extends React.Component {
     actiontype: React.PropTypes.object.isRequired,
     actions: React.PropTypes.array.isRequired,
     highlighted_moment: React.PropTypes.object.isRequired, // moment.Moment
-    columns: React.PropTypes.array.isRequired,
+    columns: React.PropTypes.arrayOf(React.PropTypes.shape({
+      start: React.PropTypes.object.isRequired, // moment.Moment
+      middle: React.PropTypes.object.isRequired, // moment.Moment
+      end: React.PropTypes.object.isRequired, // moment.Moment
+    })).isRequired,
   }
 }
 
@@ -211,9 +221,9 @@ export default class MetricsTable extends React.Component {
     // stop form submit
     event.preventDefault();
     // get input name
-    var input = this.refs.actiontypeName;
-    var name = input.value;
-    var actiontypes = [{name}];
+    const input = this.refs.actiontypeName;
+    const name = input.value;
+    const actiontypes = [{name}];
     syncActiontypes(actiontypes)
     .then(actiontypes => {
       this.props.dispatch({type: OperationType.ADD_ACTIONTYPES, actiontypes});
@@ -234,11 +244,11 @@ export default class MetricsTable extends React.Component {
     });
     // filter down to only the actions within this timeframe
     // nvm, fetchActions should only retrieve the relevant ones
-    // var actions = this.props.actions.filter(action =>
+    // const actions = this.props.actions.filter(action =>
     //   start.isBefore(action.started) && end.isAfter(action.ended));
     // and group them by actiontype_id
-    var highlighted_moment = moment(now);
-    var actiontypesWithActions = actiontypes.filter(actiontype => {
+    const highlighted_moment = moment(now);
+    const actiontypesWithActions = actiontypes.filter(actiontype => {
       if (configuration.excludeEmpty) {
         return (actions_hashmap[actiontype.actiontype_id] || []).length > 0;
       }
@@ -249,7 +259,7 @@ export default class MetricsTable extends React.Component {
       }
       return actiontype1.entered.localeCompare(actiontype2.entered);
     }).map(actiontype => {
-      var actiontypeActions = actions_hashmap[actiontype.actiontype_id] || [];
+      const actiontypeActions = actions_hashmap[actiontype.actiontype_id] || [];
       return {actiontype, actions: actiontypeActions};
     });
     return (
@@ -258,9 +268,9 @@ export default class MetricsTable extends React.Component {
           <tr>
             <th>Dates:</th>
             {columns.map(column => {
-              var label = column.middle.format('M/D');
-              var day = column.middle.format('ddd');
-              var highlighted = highlighted_moment.isBetween(column.start, column.end);
+              const label = column.middle.format('M/D');
+              const day = column.middle.format('ddd');
+              const highlighted = highlighted_moment.isBetween(column.start, column.end);
               return (
                 <th key={label} className={highlighted ? 'highlighted' : ''}>
                   <div>{label}</div>{day}
