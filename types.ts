@@ -1,6 +1,6 @@
 export const metry_host = 'https://metry';
 
-export function bind(target, key, { value: fn }) {
+export function bind(target, key, {value: fn}) {
   return {
     configurable: true,
     get() {
