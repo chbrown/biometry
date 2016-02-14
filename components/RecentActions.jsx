@@ -3,12 +3,22 @@ import React from 'react';
 import {connect} from 'react-redux';
 
 const ActionItem = ({action, actiontype, now, format = 'YYYY-MM-DD h:mma'}) => {
-  var duration = (action.started - action.ended) === 0
-    ? moment(action.started).format(format)
-    : `${moment(action.started).format(format)}-${moment(action.ended).format(format)}`;
-
-  var ago = moment(action.entered).from(now);
-  return <div>[<i>{ago}</i>] <b>{actiontype ? actiontype.name : '(not found)'}</b>: {duration}</div>;
+  const instantaneous = (action.started - action.ended) === 0;
+  const ago = moment(action.entered).from(now);
+  return (
+    <div>
+      [<i title="entered">{ago}</i>]{' '}
+      <b>{actiontype ? actiontype.name : '(not found)'}</b>{': '}
+      {instantaneous ?
+        <span title="started/ended">{moment(action.started).format(format)}</span> :
+        <span>
+          <span title="started">{moment(action.started).format(format)}</span>
+          -
+          <span title="ended">{moment(action.ended).format(format)}</span>
+        </span>
+      }
+    </div>
+  );
 };
 
 @connect(state => ({actions: state.actions, actiontypes: state.actiontypes, now: state.now}))
