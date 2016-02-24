@@ -182,14 +182,16 @@ class ActiontypeRow extends React.Component {
       // if the column is highlighted (is today), use the actual current time
       return {key: middle.toISOString(), actions: cellActions, highlighted, instant};
     });
+    const latest = Math.max(...actions.map(action => action.ended));
     return (
       <tr>
-        <td>{actiontype.name}</td>
+        <td className="right padded">{actiontype.name}</td>
         {cells.map(({key, actions, highlighted, instant}) =>
           <ActiontypeCell key={key} className={highlighted ? 'highlighted' : ''}
             actiontype_id={actiontype.actiontype_id} actions={actions} instant={instant} />
         )}
-        <td>{actiontype.name}</td>
+        <td className="left padded">{actiontype.name}</td>
+        <td className="left"><i>{moment(latest).from(highlighted_moment)}</i></td>
       </tr>
     );
   }
@@ -266,7 +268,7 @@ export default class MetricsTable extends React.Component {
       <table>
         <thead>
           <tr>
-            <th>Dates:</th>
+            <th className="right padded">Dates:</th>
             {columns.map(column => {
               const label = column.middle.format('M/D');
               const day = column.middle.format('ddd');

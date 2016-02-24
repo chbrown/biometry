@@ -39,6 +39,13 @@ h1, h2, h3, h4, h5, h6 {
   font-family: Helvetica, Arial, sans-serif;
 }
 
+.left {
+  text-align: left;
+}
+.right {
+  text-align: right;
+}
+
 table {
   td, th {
     text-align: center;
@@ -46,16 +53,10 @@ table {
     &.highlighted {
       background-color: rgba(103, 191, 210, 0.5);
     }
-  }
-  th:first-child {
-    text-align: right;
-  }
-  td:first-child, td:last-child {
-    text-align: left;
-  }
-  td:last-child {
-    padding-left: 5px;
-    padding-right: 5px;
+    &.padded {
+      padding-left: 5px;
+      padding-right: 5px;
+    }
   }
   tbody tr:hover {
     // pinkish
