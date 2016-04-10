@@ -29,7 +29,6 @@
     "express": "*",
     "less": "*",
     "less-loader": "*",
-    "react-hot-loader": "*",
     "react-transform-catch-errors": "*",
     "react-transform-hmr": "*",
     "style-loader": "*",
