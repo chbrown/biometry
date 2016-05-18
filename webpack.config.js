@@ -1,51 +1,37 @@
 var path = require('path');
 var webpack = require('webpack');
 
-var production = process.env.NODE_ENV == 'production';
-
-var plugins = [
-  // exclude Moment locales (400 kB)
-  new webpack.IgnorePlugin(/^\.\/locale$/, [/moment$/]),
-].concat(production ? [
-  new webpack.optimize.OccurenceOrderPlugin(),
-  new webpack.optimize.UglifyJsPlugin(),
-] : [
-  new webpack.HotModuleReplacementPlugin(),
-  new webpack.NoErrorsPlugin(),
-]);
+var env = process.env.NODE_ENV || 'development';
 
 module.exports = {
-  devtool: production ? undefined : 'eval', // 'source-map',
   entry: [
-    './index',
-  ].concat(production ? [] : ['webpack-hot-middleware/client']),
+    './app',
+    ...(env === 'development' ? ['webpack-hot-middleware/client'] : []),
+  ],
   output: {
     path: path.join(__dirname, 'build'),
     filename: 'bundle.js',
     publicPath: '/build/',
   },
-  plugins: plugins,
-  resolve: {
-    extensions: [
-      '',
-      '.js',
-      '.jsx',
-      '.ts',
-    ],
-  },
+  plugins: [
+    new webpack.DefinePlugin({
+      'process.env.NODE_ENV': JSON.stringify(env),
+    }),
+    // exclude Moment locales (400 kB)
+    new webpack.IgnorePlugin(/^\.\/locale$/, [/moment$/]),
+    ...(env === 'development' ? [
+      new webpack.HotModuleReplacementPlugin(),
+      new webpack.NoErrorsPlugin(),
+    ] : [
+      new webpack.optimize.OccurenceOrderPlugin(),
+      new webpack.optimize.UglifyJsPlugin(),
+    ]),
+  ],
   module: {
     loaders: [
       {
-        test: /\.ts$/,
-        loaders: ['babel-loader', 'ts-loader'],
-        include: __dirname,
-        exclude: /node_modules/,
-      },
-      {
-        test: /\.jsx$/,
+        test: /\.js$/,
         loaders: ['babel-loader'],
-        include: __dirname,
-        exclude: /node_modules/,
       },
       {
         test: /\.less$/,

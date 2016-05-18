@@ -1,6 +1,7 @@
-import moment from 'moment';
-import React from 'react';
+import * as React from 'react';
+import * as moment from 'moment';
 import {connect} from 'react-redux';
+import {Action, Actiontype, GlobalState} from '../types';
 
 const ActionItem = ({action, actiontype, now, format = 'YYYY-MM-DD h:mma'}) => {
   const instantaneous = (action.started - action.ended) === 0;
@@ -21,8 +22,15 @@ const ActionItem = ({action, actiontype, now, format = 'YYYY-MM-DD h:mma'}) => {
   );
 };
 
-@connect(state => ({actions: state.actions, actiontypes: state.actiontypes, now: state.now}))
-export default class RecentActions extends React.Component {
+interface RecentActionsProps {
+  actions?: Action[];
+  actiontypes?: Actiontype[];
+  now?: Date;
+  limit: number;
+}
+
+@connect((state: GlobalState) => ({actions: state.actions, actiontypes: state.actiontypes, now: state.now}))
+class RecentActions extends React.Component<RecentActionsProps, {}> {
   render() {
     const {actions, actiontypes, now, limit = 20} = this.props;
     return (
@@ -35,3 +43,5 @@ export default class RecentActions extends React.Component {
     );
   }
 }
+
+export default RecentActions;

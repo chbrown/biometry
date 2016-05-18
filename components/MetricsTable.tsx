@@ -1,7 +1,8 @@
-import moment from 'moment';
-import React from 'react';
+import * as moment from 'moment';
+import * as React from 'react';
+import {flatten} from 'tarry';
 import {connect} from 'react-redux';
-import {metry_host, bind, OperationType, Action, ActionJSON, raiseAction, Actiontype} from '../types';
+import {metry_host, bind, OperationType, Action, ActionJSON, raiseAction, Actiontype, Configuration, ConnectProps} from '../types';
 
 const defaultHeaders = new Headers({'Content-Type': 'application/json'});
 
@@ -13,7 +14,8 @@ maximum safe integer. It will be positive.
 P.S. const MAX_SAFE_INTEGER = Number.MAX_SAFE_INTEGER || 9007199254740991;
 */
 function randInt() {
-  return (new Date() % 10000000) * 1000 + (Math.random() * 1000 | 0);
+  const ticks = new Date().getTime();
+  return (ticks % 10000000) * 1000 + (Math.random() * 1000 | 0);
 }
 
 function groupBy(xs, keyFn) {
@@ -43,7 +45,7 @@ function createRange(start: moment.Moment, end: moment.Moment, duration: moment.
 function fetchActions({start, end}: {start?: moment.Moment, end?: moment.Moment}): Promise<Action[]> {
   let url = `${metry_host}/actions?start=${start.toISOString()}&end=${end.toISOString()}`;
   return fetch(url).then(res => res.json())
-  .then((actions_json: ActionJSON) => actions_json.map(raiseAction));
+  .then((actions_json: ActionJSON[]) => actions_json.map(raiseAction));
 }
 
 function fetchActiontypes(): Promise<Actiontype[]> {
@@ -51,41 +53,45 @@ function fetchActiontypes(): Promise<Actiontype[]> {
 }
 
 function syncActions(actions: Action[]): Promise<Action[]> {
-  return Promise.all(actions.map(action => {
-    const resource_id = (action.action_id > 0) ? action.action_id : '';
-    return fetch(`${metry_host}/actions/${resource_id}`, {
-      method: 'POST',
-      headers: defaultHeaders,
-      body: JSON.stringify(action),
-    })
-    .then(res => res.json())
-    .then(raiseAction)
-    .then((syncedAction: Action) => {
-      // if it was a temporary action, delete the temporary one
-      let deletes = (action.action_id < 0) ? [{action_id: action.action_id, deleted: new Date()}] : [];
-      return [...deletes, syncedAction];
-    });
-  }))
-  .then((actionss: Array<Action[]>) => {
-    return actionss.reduce((actions: Action[], newAction: Action) => actions.concat(newAction), []);
-  });
+  return Promise.all(
+    // the map function returns a Promise<Action[]>[]
+    actions.map(action => {
+      const resource_id = (action.action_id > 0) ? action.action_id : '';
+      return fetch(`${metry_host}/actions/${resource_id}`, {
+        method: 'POST',
+        headers: defaultHeaders,
+        body: JSON.stringify(action),
+      })
+      .then(res => res.json())
+      .then(raiseAction)
+      .then((syncedAction: Action) => {
+        // if it was a temporary action, delete the temporary one
+        let deletes: Action[] = (action.action_id < 0) ? [{action_id: action.action_id, deleted: new Date()}] : [];
+        return [...deletes, syncedAction];
+      });
+    }) as PromiseLike<Action[]>[]
+    // omg TypeScript sucks. It works when I add the verbose PromiseLike type hint,
+    // but not with the default Promise, or even with a hinted promise
+  ).then(flatten);
 }
 
 /**
 Simpler than syncActions since we don't handle unsynced actiontypes.
 */
 function syncActiontypes(actiontypes: Actiontype[]): Promise<Actiontype[]> {
-  return Promise.all(actiontypes.map(actiontype => {
-    return fetch(`${metry_host}/actiontypes/${actiontype.actiontype_id || ''}`, {
-      method: 'POST',
-      headers: defaultHeaders,
-      body: JSON.stringify(actiontype),
-    })
-    .then(res => res.json());
-  }));
+  return Promise.all(
+    actiontypes.map(actiontype => {
+      return fetch(`${metry_host}/actiontypes/${actiontype.actiontype_id || ''}`, {
+        method: 'POST',
+        headers: defaultHeaders,
+        body: JSON.stringify(actiontype),
+      })
+      .then(res => res.json());
+    }) as PromiseLike<Actiontype>[]
+  );
 }
 
-function dispatchSyncActions(dispatch, ...actions) {
+function dispatchSyncActions(dispatch, ...actions: Action[]) {
   // sync local actions
   dispatch({type: OperationType.ADD_ACTIONS, actions});
   // we may not get an immediate rerender of the grayed-out local action
@@ -103,10 +109,15 @@ function dispatchSyncActions(dispatch, ...actions) {
   });
 }
 
+interface ActionSpanProps {
+  action_id: number;
+  local: boolean;
+}
+
 @connect()
-class ActionSpan extends React.Component {
+class ActionSpan extends React.Component<ActionSpanProps & ConnectProps, {}> {
   @bind
-  onDelete(ev) {
+  onDelete(ev: React.MouseEvent) {
     ev.stopPropagation();
     // create delete action
     dispatchSyncActions(this.props.dispatch, {
@@ -127,18 +138,18 @@ class ActionSpan extends React.Component {
   }
 }
 
+interface ActiontypeCellProps {
+  actiontype_id: number;
+  actions: Action[];
+  className: string;
+  instant: moment.Moment;
+}
+
 @connect()
-class ActiontypeCell extends React.Component {
+class ActiontypeCell extends React.Component<ActiontypeCellProps & ConnectProps, {}> {
   @bind
-  onAdd() {
+  onAdd(ev: React.MouseEvent) {
     const {instant, actiontype_id} = this.props;
-    console.log('ActiontypeCell dispatch', {
-      actiontype_id,
-      action_id: -randInt(),
-      started: instant.toDate(),
-      ended: instant.toDate(),
-      local: true,
-    });
     dispatchSyncActions(this.props.dispatch, {
       actiontype_id,
       action_id: -randInt(),
@@ -168,7 +179,20 @@ class ActiontypeCell extends React.Component {
   }
 }
 
-class ActiontypeRow extends React.Component {
+interface MetricsColumn {
+  start: moment.Moment;
+  middle: moment.Moment;
+  end: moment.Moment;
+}
+
+interface ActiontypeRowProps {
+  actiontype: Actiontype;
+  actions: Action[];
+  highlighted_moment: moment.Moment;
+  columns: MetricsColumn[];
+}
+
+class ActiontypeRow extends React.Component<ActiontypeRowProps, {}> {
   render() {
     const {actiontype, actions, highlighted_moment, columns} = this.props;
     // the contents should default to non-empty in case there are no actions,
@@ -182,7 +206,7 @@ class ActiontypeRow extends React.Component {
       // if the column is highlighted (is today), use the actual current time
       return {key: middle.toISOString(), actions: cellActions, highlighted, instant};
     });
-    const latest = Math.max(...actions.map(action => action.ended));
+    const latest = Math.max(...actions.map(action => action.ended.getTime()));
     return (
       <tr>
         <td className="right padded">{actiontype.name}</td>
@@ -198,17 +222,27 @@ class ActiontypeRow extends React.Component {
   static propTypes = {
     actiontype: React.PropTypes.object.isRequired,
     actions: React.PropTypes.array.isRequired,
-    highlighted_moment: React.PropTypes.object.isRequired, // moment.Moment
+    highlighted_moment: React.PropTypes.object.isRequired,
     columns: React.PropTypes.arrayOf(React.PropTypes.shape({
-      start: React.PropTypes.object.isRequired, // moment.Moment
-      middle: React.PropTypes.object.isRequired, // moment.Moment
-      end: React.PropTypes.object.isRequired, // moment.Moment
+      start: React.PropTypes.object.isRequired,
+      middle: React.PropTypes.object.isRequired,
+      end: React.PropTypes.object.isRequired,
     })).isRequired,
   }
 }
 
+
+interface MetricsTableProps {
+  start: moment.Moment;
+  end: moment.Moment;
+  actions?: Action[];
+  actiontypes?: Actiontype[];
+  now?: Date;
+  configuration?: Configuration;
+}
+
 @connect(({actions, actiontypes, now, configuration}) => ({actions, actiontypes, now, configuration}))
-export default class MetricsTable extends React.Component {
+class MetricsTable extends React.Component<MetricsTableProps & ConnectProps, {}> {
   componentDidMount() {
     let {start, end} = this.props;
     Promise.all([fetchActions({start, end}), fetchActiontypes()])
@@ -219,11 +253,11 @@ export default class MetricsTable extends React.Component {
     .catch(reason => console.error('fetchActions(types) error', reason));
   }
   @bind
-  onAddActiontype(event) {
+  onAddActiontype(ev: React.FormEvent) {
     // stop form submit
-    event.preventDefault();
+    ev.preventDefault();
     // get input name
-    const input = this.refs.actiontypeName;
+    const input = this.refs['actiontypeName'] as HTMLInputElement;
     const name = input.value;
     const actiontypes = [{name}];
     syncActiontypes(actiontypes)
@@ -302,7 +336,9 @@ export default class MetricsTable extends React.Component {
     );
   }
   static propTypes = {
-    start: React.PropTypes.object.isRequired, // moment.Moment
-    end: React.PropTypes.object.isRequired, // moment.Moment
+    start: React.PropTypes.object.isRequired,
+    end: React.PropTypes.object.isRequired,
   }
 }
+
+export default MetricsTable;

@@ -1,11 +1,17 @@
 export const metry_host = 'https://metry';
 
-export function bind(target, key, {value: fn}) {
+export interface ConnectProps {
+  dispatch?(operation: Operation): any;
+}
+
+export const bind: MethodDecorator = <T extends Function>(target: Object,
+                                                          propertyKey: string | symbol,
+                                                          descriptor: TypedPropertyDescriptor<T>) => {
   return {
     configurable: true,
     get() {
-      let value = fn.bind(this);
-      Object.defineProperty(this, key, {
+      const value = descriptor.value.bind(this);
+      Object.defineProperty(this, propertyKey, {
         value,
         configurable: true,
         writable: true
@@ -13,7 +19,7 @@ export function bind(target, key, {value: fn}) {
       return value;
     }
   };
-}
+};
 
 /**
 Action will have a random temporary ID called tmp_id until it is synced with the
@@ -46,16 +52,18 @@ export interface ActionJSON {
 }
 
 export interface Actiontype {
-  actiontype_id: number;
+  actiontype_id?: number;
   name: string;
-  view_order: number;
-  archived: boolean;
-  created: Date; // string
+  view_order?: number;
+  archived?: boolean;
+  created?: string; // string repr of Date
+  entered?: string; // string repr of Date
 }
 
 export interface Configuration {
-  excludeEmpty: boolean;
-  daysPast: number;
+  daysPast?: number;
+  sortAlphabetically?: boolean;
+  excludeEmpty?: boolean;
 }
 
 export const OperationType = {
@@ -64,6 +72,13 @@ export const OperationType = {
   SET_NOW: 'SET_NOW',
   SET_CONFIGURATION: 'SET_CONFIGURATION',
 };
+
+export interface GlobalState {
+  actions: Action[];
+  actiontypes: Actiontype[];
+  now: Date;
+  configuration: Configuration;
+}
 
 export interface Operation {
   type: string;
