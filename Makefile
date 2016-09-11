@@ -1,6 +1,6 @@
 BIN := node_modules/.bin
 TYPESCRIPT := $(shell jq -r '.files[]' tsconfig.json | grep -Fv .d.ts)
-TYPESCRIPT_BASENAMES = $(basename $(TYPESCRIPT))
+TYPESCRIPT_BASENAMES := $(basename $(TYPESCRIPT))
 
 all: $(TYPESCRIPT_BASENAMES:%=%.js) build/bundle.js .gitignore .npmignore
 
