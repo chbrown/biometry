@@ -1,4 +1,4 @@
-export const metry_host = 'https://metry';
+export const metry_host = 'https://metry.dev';
 
 export interface ConnectProps {
   dispatch?(operation: Operation): any;
