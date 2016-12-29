@@ -8,7 +8,7 @@
   "files": [
     "node_modules/declarations/history/history.d.ts",
     "node_modules/declarations/lib/fetch.d.ts",
-    "node_modules/declarations/moment/moment-node.d.ts",
+    "node_modules/declarations/moment/moment.d.ts",
     "node_modules/declarations/react-redux/react-redux-2.1.2.d.ts",
     "node_modules/declarations/react/react-dom.d.ts",
     "node_modules/declarations/react/react.d.ts",

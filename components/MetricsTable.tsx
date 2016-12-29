@@ -44,17 +44,16 @@ function createRange(start: moment.Moment, end: moment.Moment, duration: moment.
 
 function fetchActions({start, end}: {start?: moment.Moment, end?: moment.Moment}): Promise<Action[]> {
   let url = `${metry_host}/actions?start=${start.toISOString()}&end=${end.toISOString()}`;
-  return fetch(url).then(res => res.json())
-  .then((actions_json: ActionJSON[]) => actions_json.map(raiseAction));
+  return fetch(url).then(res => res.json<ActionJSON[]>())
+  .then(actions_json => actions_json.map(raiseAction));
 }
 
 function fetchActiontypes(): Promise<Actiontype[]> {
-  return fetch(`${metry_host}/actiontypes`).then(res => res.json());
+  return fetch(`${metry_host}/actiontypes`).then(res => res.json<Actiontype[]>());
 }
 
 function syncActions(actions: Action[]): Promise<Action[]> {
   return Promise.all(
-    // the map function returns a Promise<Action[]>[]
     actions.map(action => {
       const resource_id = (action.action_id > 0) ? action.action_id : '';
       return fetch(`${metry_host}/actions/${resource_id}`, {
@@ -62,17 +61,16 @@ function syncActions(actions: Action[]): Promise<Action[]> {
         headers: defaultHeaders,
         body: JSON.stringify(action),
       })
-      .then(res => res.json())
+      .then(res => res.json<ActionJSON>())
       .then(raiseAction)
-      .then((syncedAction: Action) => {
+      .then(syncedAction => {
         // if it was a temporary action, delete the temporary one
         let deletes: Action[] = (action.action_id < 0) ? [{action_id: action.action_id, deleted: new Date()}] : [];
         return [...deletes, syncedAction];
       });
-    }) as PromiseLike<Action[]>[]
-    // omg TypeScript sucks. It works when I add the verbose PromiseLike type hint,
-    // but not with the default Promise, or even with a hinted promise
-  ).then(flatten);
+    })
+    // TypeScript can't handle the formulation without the explicit function, i.e., .then(flatten)
+  ).then(actionss => flatten(actionss));
 }
 
 /**
@@ -86,8 +84,8 @@ function syncActiontypes(actiontypes: Actiontype[]): Promise<Actiontype[]> {
         headers: defaultHeaders,
         body: JSON.stringify(actiontype),
       })
-      .then(res => res.json());
-    }) as PromiseLike<Actiontype>[]
+      .then(res => res.json<Actiontype>());
+    })
   );
 }
 

@@ -14,7 +14,7 @@ import {OperationType, Configuration, GlobalState} from './types';
 
 import './site.less';
 
-const reducer = combineReducers(reducers);
+const reducer = combineReducers(reducers as any);
 const store = createStore(reducer);
 
 document.addEventListener('visibilitychange', () => {
