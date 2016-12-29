@@ -18,8 +18,12 @@ const reducer = combineReducers(reducers);
 const store = createStore(reducer);
 
 document.addEventListener('visibilitychange', () => {
-  /** document.visibilityState will be either 'hidden' or 'visible' */
-  if (document.visibilityState === 'visible') {
+  /**
+  See https://www.w3.org/TR/page-visibility/
+
+  document.visibilityState will be either 'hidden' or 'visible'
+  */
+  if (!document.hidden) { // same as document.visibilityState === 'visible' ?
     var date = new Date();
     store.dispatch({type: OperationType.SET_NOW, date});
   }
