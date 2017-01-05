@@ -16,6 +16,7 @@ module.exports = {
   plugins: [
     new webpack.DefinePlugin({
       'process.env.NODE_ENV': JSON.stringify(env),
+      "__WEBPACK_TIMESTAMP__": JSON.stringify(new Date().toISOString()),
     }),
     // exclude Moment locales (400 kB)
     new webpack.IgnorePlugin(/^\.\/locale$/, [/moment$/]),
