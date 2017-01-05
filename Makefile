@@ -8,7 +8,7 @@ $(BIN)/tsc $(BIN)/webpack:
 	npm install
 
 .gitignore: tsconfig.json
-	echo $(TYPESCRIPT_BASENAMES:%=%.js) $(TYPESCRIPT_BASENAMES:%=%.d.ts) | tr ' ' '\n' > $@
+	echo $(TYPESCRIPT_BASENAMES:%=%.js) | tr ' ' '\n' > $@
 
 .npmignore: tsconfig.json
 	echo $(TYPESCRIPT) Makefile tsconfig.json webpack-dev-server.js webpack.config.js | tr ' ' '\n' > $@

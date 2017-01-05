@@ -5,10 +5,3 @@ components/RecentActions.js
 app.js
 reducers.js
 types.js
-components/ConfigCheckbox.d.ts
-components/ConfigNumber.d.ts
-components/MetricsTable.d.ts
-components/RecentActions.d.ts
-app.d.ts
-reducers.d.ts
-types.d.ts
