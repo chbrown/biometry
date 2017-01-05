@@ -283,10 +283,10 @@ class MetricsTable extends React.Component<MetricsTableProps & ConnectProps, {}>
     // and group them by actiontype_id
     const highlighted_moment = moment(now);
     const actiontypesWithActions = actiontypes.filter(actiontype => {
-      if (configuration.excludeEmpty) {
-        return (actions_hashmap[actiontype.actiontype_id] || []).length > 0;
-      }
-      return true;
+      const actiontypeActions = actions_hashmap[actiontype.actiontype_id] || [];
+      const enteredSameDay = moment(actiontype.entered).isSame(highlighted_moment, 'day');
+      // if excludeEmpty is false, we include everything
+      return !configuration.excludeEmpty || (actiontypeActions.length > 0 || enteredSameDay);
     }).sort((actiontype1, actiontype2) => {
       if (configuration.sortAlphabetically) {
         return actiontype1.name.localeCompare(actiontype2.name);
