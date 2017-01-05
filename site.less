@@ -71,3 +71,19 @@ table {
 #daysPast input {
   width: 65px;
 }
+
+footer {
+  position: fixed;
+  bottom: 0;
+  right: 0;
+  font-size: 80%;
+
+  .build-timestamp {
+    padding: 0.5em 1em;
+    background: white;
+    opacity: 0.75;
+    &::before {
+      content: 'Build timestamp: ';
+    }
+  }
+}

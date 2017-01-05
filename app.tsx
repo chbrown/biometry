@@ -14,6 +14,8 @@ import {OperationType, Configuration, GlobalState} from './types';
 
 import './site.less';
 
+const buildTimestamp = __WEBPACK_TIMESTAMP__;
+
 const reducer = combineReducers(reducers as any);
 const store = createStore(reducer);
 
@@ -58,6 +60,9 @@ class App extends React.Component<AppProps, {}> {
           <h3>Recent Additions</h3>
           <RecentActions limit={10} />
         </section>
+        <footer>
+          <div className="build-timestamp">{buildTimestamp}</div>
+        </footer>
       </main>
     );
   }
