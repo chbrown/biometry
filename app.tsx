@@ -58,7 +58,7 @@ class App extends React.Component<AppProps, {}> {
         </section>
         <section>
           <h3>Recent Additions</h3>
-          <RecentActions limit={10} />
+          <RecentActions limit={20} />
         </section>
         <footer>
           <div className="now-timestamp">{now.toISOString()}</div>
