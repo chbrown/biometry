@@ -28,6 +28,6 @@ dev:
 build/bundle.js: webpack.config.js $(TYPESCRIPT_BASENAMES:%=%.js)
 	NODE_ENV=production $(BIN)/webpack --config $<
 
-# clean:
-# 	# deleting intermediate TypeScript compile output
-# 	rm -f $(TYPESCRIPT:%.ts=%.js)
+clean:
+	# deleting intermediate TypeScript compile output
+	rm -f $(TYPESCRIPT_BASENAMES:%=%.js)
