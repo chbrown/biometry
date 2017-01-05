@@ -324,7 +324,7 @@ class MetricsTable extends React.Component<MetricsTableProps & ConnectProps, {}>
         <tfoot>
           <tr>
             <td>
-              <form onSubmit={this.onAddActiontype} className="vpad">
+              <form onSubmit={this.onAddActiontype}>
                 <input type="text" ref="actiontypeName" placeholder="New action type" />
               </form>
             </td>

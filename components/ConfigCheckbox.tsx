@@ -20,7 +20,7 @@ class ConfigCheckbox extends React.Component<ConfigCheckboxProps & ConnectProps,
     const {label, name, configuration} = this.props;
     const value = configuration[name];
     return (
-      <label>
+      <label id={name}>
         <input type="checkbox" checked={value} onChange={this.onChange} />
         <b>{label}</b>
       </label>

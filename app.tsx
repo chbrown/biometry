@@ -43,7 +43,7 @@ class App extends React.Component<AppProps, {}> {
     const start = end.clone().subtract(daysPast, 'd');
     return (
       <main>
-        <div className="hpad vpad flex">
+        <div className="flex">
           <h2>Biometry App</h2>
           <div>
             <ConfigNumber label="Days Past" name="daysPast" />
@@ -51,11 +51,11 @@ class App extends React.Component<AppProps, {}> {
             <ConfigCheckbox label="Exclude Empty" name="excludeEmpty" />
           </div>
         </div>
-        <section className="hpad">
+        <section>
           <MetricsTable start={start} end={end} />
         </section>
-        <section className="hpad">
-          <h3 className="vpad">Recent Additions</h3>
+        <section>
+          <h3>Recent Additions</h3>
           <RecentActions limit={10} />
         </section>
       </main>

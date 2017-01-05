@@ -1,42 +1,14 @@
-// --- general resets ---
 body {
-  margin: 0;
-}
-table {
-  border-spacing: 0;
-  border-collapse: collapse;
-  th, td {
-    font-size: 100%;
-    text-align: left;
-  }
-}
-// ----------------------
-// --- generic compact ---
-textarea, input, select, button {
-  box-sizing: border-box;
-}
-section {
-  margin-top: 5px;
-  margin-bottom: 5px;
-  padding-top: 5px;
-  padding-bottom: 5px;
-}
-.vpad {
-  padding-top: 10px;
-  padding-bottom: 10px;
-}
-.hpad {
-  padding-left: 10px;
-  padding-right: 10px;
-}
-// -----------------------
-
-body {
+  margin-top: 0;
   font: 14px "Times New Roman", Times, serif;
 }
 h1, h2, h3, h4, h5, h6 {
-  margin: 0;
+  margin: 0.5em 0;
   font-family: Helvetica, Arial, sans-serif;
+}
+
+textarea, input, select, button {
+  box-sizing: border-box;
 }
 
 .left {
@@ -45,9 +17,18 @@ h1, h2, h3, h4, h5, h6 {
 .right {
   text-align: right;
 }
+.flex {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
 
 table {
+  border-spacing: 0;
+  border-collapse: collapse;
+
   td, th {
+    font-size: 100%;
     text-align: center;
     vertical-align: top;
     &.highlighted {
@@ -63,23 +44,16 @@ table {
     }
   }
   tbody tr:hover {
-    // pinkish
-    background-color: rgba(210, 103, 155, 0.5);
+    background-color: rgba(210, 103, 155, 0.5); // pinkish
     td {
       &.highlighted {
-        // dark pink
-        background-color: rgba(210, 103, 155, 0.8);
+        background-color: rgba(210, 103, 155, 0.8); // dark pink
       }
       &:hover {
-        // darker pink
-        background-color: rgba(200, 80, 125, 0.8);
+        background-color: rgba(200, 80, 125, 0.8); // darker pink
       }
     }
   }
-}
-
-input[type="number"] {
-  width: 65px;
 }
 
 .cell {
@@ -94,8 +68,6 @@ input[type="number"] {
   }
 }
 
-.flex {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+#daysPast input {
+  width: 65px;
 }

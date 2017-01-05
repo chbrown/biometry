@@ -20,7 +20,7 @@ class ConfigNumber extends React.Component<ConfigNumberProps & ConnectProps, {}>
     const {label, name, configuration} = this.props;
     const value = configuration[name];
     return (
-      <label>
+      <label id={name}>
         <div><b>{label}</b></div>
         <input type="number" value={value} onChange={this.onChange} />
       </label>
