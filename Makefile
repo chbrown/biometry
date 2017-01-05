@@ -31,3 +31,5 @@ build/bundle.js: webpack.config.js $(TYPESCRIPT_BASENAMES:%=%.js)
 clean:
 	# deleting intermediate TypeScript compile output
 	rm -f $(TYPESCRIPT_BASENAMES:%=%.js)
+	# deleting bundle
+	rm -f build/bundle.js
