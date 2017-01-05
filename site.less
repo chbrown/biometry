@@ -76,12 +76,20 @@ footer {
   position: fixed;
   bottom: 0;
   right: 0;
-  font-size: 80%;
+  font-size: 85%;
+  padding: 0.5em 1em;
+  background: rgba(255, 255, 255, 0.9);
+  text-align: right;
+
+  .now-timestamp {
+    color: #555;
+    &::before {
+      content: 'Now: ';
+    }
+  }
 
   .build-timestamp {
-    padding: 0.5em 1em;
-    background: white;
-    opacity: 0.75;
+    color: #AAA;
     &::before {
       content: 'Build timestamp: ';
     }

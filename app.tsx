@@ -61,6 +61,7 @@ class App extends React.Component<AppProps, {}> {
           <RecentActions limit={10} />
         </section>
         <footer>
+          <div className="now-timestamp">{now.toISOString()}</div>
           <div className="build-timestamp">{buildTimestamp}</div>
         </footer>
       </main>
