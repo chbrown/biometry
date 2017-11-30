@@ -1,11 +1,8 @@
-components/ConfigCheckbox.tsx
-components/ConfigNumber.tsx
-components/MetricsTable.tsx
-components/RecentActions.tsx
-app.tsx
-reducers.ts
-types.ts
+*.ts
+*.tsx
+!*.d.ts
 Makefile
+site.less
 tsconfig.json
 webpack-dev-server.js
 webpack.config.js

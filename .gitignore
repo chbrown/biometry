@@ -1,7 +1,2 @@
-components/ConfigCheckbox.js
-components/ConfigNumber.js
-components/MetricsTable.js
-components/RecentActions.js
-app.js
-reducers.js
-types.js
+*.js
+*.d.ts
