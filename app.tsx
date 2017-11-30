@@ -32,11 +32,10 @@ document.addEventListener('visibilitychange', () => {
 });
 
 interface AppProps {
-  configuration?: Configuration;
-  now?: Date;
+  configuration: Configuration;
+  now: Date;
 }
 
-@connect((state: GlobalState) => ({configuration: state.configuration, now: state.now}))
 class App extends React.Component<AppProps, {}> {
   render() {
     const {configuration, now} = this.props;
@@ -69,8 +68,11 @@ class App extends React.Component<AppProps, {}> {
   }
 }
 
+const mapStateToProps = ({configuration, now}: GlobalState) => ({configuration, now});
+const ConnectedApp = connect(mapStateToProps)(App);
+
 render((
   <Provider store={store}>
-    <App />
+    <ConnectedApp />
   </Provider>
 ), document.getElementById('app'));

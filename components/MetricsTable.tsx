@@ -2,7 +2,7 @@ import * as moment from 'moment';
 import * as React from 'react';
 import {flatten} from 'tarry';
 import {connect} from 'react-redux';
-import {metry_host, bind, OperationType, Action, ActionJSON, raiseAction, Actiontype, Configuration, ConnectProps} from '../types';
+import {metry_host, bind, OperationType, Action, ActionJSON, raiseAction, Actiontype, GlobalState, Configuration, ConnectProps} from '../types';
 
 const defaultHeaders = new Headers({'Content-Type': 'application/json'});
 
@@ -44,12 +44,12 @@ function createRange(start: moment.Moment, end: moment.Moment, duration: moment.
 
 function fetchActions({start, end}: {start?: moment.Moment, end?: moment.Moment}): Promise<Action[]> {
   let url = `${metry_host}/actions?start=${start.toISOString()}&end=${end.toISOString()}`;
-  return fetch(url).then(res => res.json<ActionJSON[]>())
-  .then(actions_json => actions_json.map(raiseAction));
+  return fetch(url).then(res => res.json())
+  .then((actions_json: ActionJSON[]) => actions_json.map(raiseAction));
 }
 
 function fetchActiontypes(): Promise<Actiontype[]> {
-  return fetch(`${metry_host}/actiontypes`).then(res => res.json<Actiontype[]>());
+  return fetch(`${metry_host}/actiontypes`).then(res => res.json());
 }
 
 function syncActions(actions: Action[]): Promise<Action[]> {
@@ -61,7 +61,7 @@ function syncActions(actions: Action[]): Promise<Action[]> {
         headers: defaultHeaders,
         body: JSON.stringify(action),
       })
-      .then(res => res.json<ActionJSON>())
+      .then(res => res.json())
       .then(raiseAction)
       .then(syncedAction => {
         // if it was a temporary action, delete the temporary one
@@ -84,7 +84,7 @@ function syncActiontypes(actiontypes: Actiontype[]): Promise<Actiontype[]> {
         headers: defaultHeaders,
         body: JSON.stringify(actiontype),
       })
-      .then(res => res.json<Actiontype>());
+      .then(res => res.json());
     })
   );
 }
@@ -112,10 +112,9 @@ interface ActionSpanProps {
   local: boolean;
 }
 
-@connect()
 class ActionSpan extends React.Component<ActionSpanProps & ConnectProps, {}> {
   @bind
-  onDelete(ev: React.MouseEvent) {
+  onDelete(ev: React.MouseEvent<HTMLSpanElement>) {
     ev.stopPropagation();
     // create delete action
     dispatchSyncActions(this.props.dispatch, {
@@ -136,6 +135,8 @@ class ActionSpan extends React.Component<ActionSpanProps & ConnectProps, {}> {
   }
 }
 
+const ConnectedActionSpan = connect()(ActionSpan);
+
 interface ActiontypeCellProps {
   actiontype_id: number;
   actions: Action[];
@@ -143,10 +144,9 @@ interface ActiontypeCellProps {
   instant: moment.Moment;
 }
 
-@connect()
 class ActiontypeCell extends React.Component<ActiontypeCellProps & ConnectProps, {}> {
   @bind
-  onAdd(ev: React.MouseEvent) {
+  onAdd(ev: React.MouseEvent<HTMLDivElement>) {
     const {instant, actiontype_id} = this.props;
     dispatchSyncActions(this.props.dispatch, {
       actiontype_id,
@@ -162,7 +162,7 @@ class ActiontypeCell extends React.Component<ActiontypeCellProps & ConnectProps,
       <td className={className}>
         <div className="cell" onMouseDown={this.onAdd}>
           {(actions.length > 0) ? actions.map(action =>
-            <ActionSpan key={action.action_id} action_id={action.action_id} local={action.local} />
+            <ConnectedActionSpan key={action.action_id} action_id={action.action_id} local={action.local} />
           ) : '\xA0'}
         </div>
       </td>
@@ -176,6 +176,8 @@ class ActiontypeCell extends React.Component<ActiontypeCellProps & ConnectProps,
     instant: React.PropTypes.object.isRequired, // moment.Moment
   }
 }
+
+const ConnectedActiontypeCell = connect()(ActiontypeCell);
 
 interface MetricsColumn {
   start: moment.Moment;
@@ -209,7 +211,7 @@ class ActiontypeRow extends React.Component<ActiontypeRowProps, {}> {
       <tr>
         <td className="right padded">{actiontype.name}</td>
         {cells.map(({key, actions, highlighted, instant}) =>
-          <ActiontypeCell key={key} className={highlighted ? 'highlighted' : ''}
+          <ConnectedActiontypeCell key={key} className={highlighted ? 'highlighted' : ''}
             actiontype_id={actiontype.actiontype_id} actions={actions} instant={instant} />
         )}
         <td className="left padded">{actiontype.name}</td>
@@ -233,13 +235,12 @@ class ActiontypeRow extends React.Component<ActiontypeRowProps, {}> {
 interface MetricsTableProps {
   start: moment.Moment;
   end: moment.Moment;
-  actions?: Action[];
-  actiontypes?: Actiontype[];
-  now?: Date;
-  configuration?: Configuration;
+  actions: Action[];
+  actiontypes: Actiontype[];
+  now: Date;
+  configuration: Configuration;
 }
 
-@connect(({actions, actiontypes, now, configuration}) => ({actions, actiontypes, now, configuration}))
 class MetricsTable extends React.Component<MetricsTableProps & ConnectProps, {}> {
   componentDidMount() {
     let {start, end} = this.props;
@@ -251,7 +252,7 @@ class MetricsTable extends React.Component<MetricsTableProps & ConnectProps, {}>
     .catch(reason => console.error('fetchActions(types) error', reason));
   }
   @bind
-  onAddActiontype(ev: React.FormEvent) {
+  onAddActiontype(ev: React.FormEvent<HTMLFormElement>) {
     // stop form submit
     ev.preventDefault();
     // get input name
@@ -339,4 +340,7 @@ class MetricsTable extends React.Component<MetricsTableProps & ConnectProps, {}>
   }
 }
 
-export default MetricsTable;
+const mapStateToProps = ({actions, actiontypes, now, configuration}: GlobalState) => ({actions, actiontypes, now, configuration});
+const ConnectedMetricsTable = connect(mapStateToProps)(MetricsTable);
+
+export default ConnectedMetricsTable;

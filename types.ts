@@ -1,15 +1,13 @@
+import {DispatchProp} from 'react-redux';
+
 export const metry_host = 'https://metry.test';
 
-export interface ConnectProps {
-  dispatch?(operation: Operation): any;
-}
-
-export const bind: MethodDecorator = <T extends Function>(target: Object,
-                                                          propertyKey: string | symbol,
-                                                          descriptor: TypedPropertyDescriptor<T>) => {
+export function bind<T extends Function>(target: Object,
+                                         propertyKey: string | symbol,
+                                         descriptor: TypedPropertyDescriptor<T>): TypedPropertyDescriptor<T> | void {
   return {
     configurable: true,
-    get() {
+    get(this: T): T {
       const value = descriptor.value.bind(this);
       Object.defineProperty(this, propertyKey, {
         value,
@@ -87,6 +85,8 @@ export interface Operation {
   date?: Date;
   configuration?: Configuration;
 }
+
+export type ConnectProps = DispatchProp<Operation>;
 
 export function raiseAction(action: ActionJSON): Action {
   // TODO: is it faster to raise it in-place?

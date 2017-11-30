@@ -25,13 +25,12 @@ const ActionRow = ({action, actiontype, now, format = 'YYYY-MM-DD h:mma'}) => {
 };
 
 interface RecentActionsProps {
-  actions?: Action[];
-  actiontypes?: Actiontype[];
-  now?: Date;
+  actions: Action[];
+  actiontypes: Actiontype[];
+  now: Date;
   limit: number;
 }
 
-@connect((state: GlobalState) => ({actions: state.actions, actiontypes: state.actiontypes, now: state.now}))
 class RecentActions extends React.Component<RecentActionsProps, {}> {
   render() {
     const {actions, actiontypes, now, limit = 20} = this.props;
@@ -46,4 +45,7 @@ class RecentActions extends React.Component<RecentActionsProps, {}> {
   }
 }
 
-export default RecentActions;
+const mapStateToProps = ({actions, actiontypes, now}: GlobalState) => ({actions, actiontypes, now});
+const ConnectedRecentActions = connect(mapStateToProps)(RecentActions);
+
+export default ConnectedRecentActions;

@@ -1,17 +1,16 @@
 import * as React from 'react';
 import {connect} from 'react-redux';
-import {bind, OperationType, Configuration, ConnectProps} from '../types';
+import {bind, OperationType, Configuration, GlobalState, ConnectProps} from '../types';
 
 interface ConfigNumberProps {
   label: string;
   name: string;
-  configuration?: Configuration;
+  configuration: Configuration;
 }
 
-@connect(state => ({configuration: state.configuration}))
 class ConfigNumber extends React.Component<ConfigNumberProps & ConnectProps, {}> {
   @bind
-  onChange(ev: React.FormEvent) {
+  onChange(ev: React.FormEvent<HTMLInputElement>) {
     const input = ev.target as HTMLInputElement;
     const configuration = {[this.props.name]: parseInt(input.value, 10)};
     this.props.dispatch({type: OperationType.SET_CONFIGURATION, configuration});
@@ -28,4 +27,7 @@ class ConfigNumber extends React.Component<ConfigNumberProps & ConnectProps, {}>
   }
 }
 
-export default ConfigNumber;
+const mapStateToProps = ({configuration}: GlobalState) => ({configuration});
+const ConnectedConfigNumber = connect(mapStateToProps)(ConfigNumber);
+
+export default ConnectedConfigNumber;
