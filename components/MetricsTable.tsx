@@ -7,13 +7,13 @@ import {metry_host, bind, OperationType, Action, ActionJSON, raiseAction, Action
 const defaultHeaders = new Headers({'Content-Type': 'application/json'});
 
 /**
-@returns {number} A mixture of day-granularity timestamp (meaning, it will repeat from
+A mixture of day-granularity timestamp (meaning, it will repeat from
 one day to the next) and randomness, but still considerably smaller than the
 maximum safe integer. It will be positive.
 
 P.S. const MAX_SAFE_INTEGER = Number.MAX_SAFE_INTEGER || 9007199254740991;
 */
-function randInt() {
+function randInt(): number {
   const ticks = new Date().getTime();
   return (ticks % 10000000) * 1000 + (Math.random() * 1000 | 0);
 }
@@ -43,7 +43,7 @@ function createRange(start: moment.Moment, end: moment.Moment, duration: moment.
 }
 
 function fetchActions({start, end}: {start?: moment.Moment, end?: moment.Moment}): Promise<Action[]> {
-  let url = `${metry_host}/actions?start=${start.toISOString()}&end=${end.toISOString()}`;
+  const url = `${metry_host}/actions?start=${start.toISOString()}&end=${end.toISOString()}`;
   return fetch(url).then(res => res.json())
   .then((actions_json: ActionJSON[]) => actions_json.map(raiseAction));
 }
@@ -65,12 +65,11 @@ function syncActions(actions: Action[]): Promise<Action[]> {
       .then(raiseAction)
       .then(syncedAction => {
         // if it was a temporary action, delete the temporary one
-        let deletes: Action[] = (action.action_id < 0) ? [{action_id: action.action_id, deleted: new Date()}] : [];
+        const deletes: Action[] = (action.action_id < 0) ? [{action_id: action.action_id, deleted: new Date()}] : [];
         return [...deletes, syncedAction];
       });
     })
-    // TypeScript can't handle the formulation without the explicit function, i.e., .then(flatten)
-  ).then(actionss => flatten(actionss));
+  ).then(flatten);
 }
 
 /**
@@ -112,7 +111,7 @@ interface ActionSpanProps {
   local: boolean;
 }
 
-class ActionSpan extends React.Component<ActionSpanProps & ConnectProps, {}> {
+class ActionSpan extends React.Component<ActionSpanProps & ConnectProps> {
   @bind
   onDelete(ev: React.MouseEvent<HTMLSpanElement>) {
     ev.stopPropagation();
@@ -144,7 +143,7 @@ interface ActiontypeCellProps {
   instant: moment.Moment;
 }
 
-class ActiontypeCell extends React.Component<ActiontypeCellProps & ConnectProps, {}> {
+class ActiontypeCell extends React.Component<ActiontypeCellProps & ConnectProps> {
   @bind
   onAdd(ev: React.MouseEvent<HTMLDivElement>) {
     const {instant, actiontype_id} = this.props;
@@ -192,7 +191,7 @@ interface ActiontypeRowProps {
   columns: MetricsColumn[];
 }
 
-class ActiontypeRow extends React.Component<ActiontypeRowProps, {}> {
+class ActiontypeRow extends React.Component<ActiontypeRowProps> {
   render() {
     const {actiontype, actions, highlighted_moment, columns} = this.props;
     // the contents should default to non-empty in case there are no actions,
@@ -241,9 +240,9 @@ interface MetricsTableProps {
   configuration: Configuration;
 }
 
-class MetricsTable extends React.Component<MetricsTableProps & ConnectProps, {}> {
+class MetricsTable extends React.Component<MetricsTableProps & ConnectProps> {
   componentDidMount() {
-    let {start, end} = this.props;
+    const {start, end} = this.props;
     Promise.all([fetchActions({start, end}), fetchActiontypes()])
     .then(([actions, actiontypes]) => {
       this.props.dispatch({type: OperationType.ADD_ACTIONS, actions});
@@ -256,7 +255,7 @@ class MetricsTable extends React.Component<MetricsTableProps & ConnectProps, {}>
     // stop form submit
     ev.preventDefault();
     // get input name
-    const input = this.refs['actiontypeName'] as HTMLInputElement;
+    const input = this.refs.actiontypeName as HTMLInputElement;
     const name = input.value;
     const actiontypes = [{name}];
     syncActiontypes(actiontypes)

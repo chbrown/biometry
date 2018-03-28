@@ -31,7 +31,7 @@ interface RecentActionsProps {
   limit: number;
 }
 
-class RecentActions extends React.Component<RecentActionsProps, {}> {
+class RecentActions extends React.Component<RecentActionsProps> {
   render() {
     const {actions, actiontypes, now, limit = 20} = this.props;
     return (

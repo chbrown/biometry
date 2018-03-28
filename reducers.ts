@@ -9,7 +9,7 @@ Does not mutate `actions`.
 */
 function concatAction(actions: Action[], new_action: Action) {
   // remove any existing actions that have the same action_id
-  var filtered_actions = actions.filter(action => action.action_id !== new_action.action_id);
+  const filtered_actions = actions.filter(action => action.action_id !== new_action.action_id);
   // deleted might be null if it comes from the database, or undefined if from the app
   if (!new_action.deleted) {
     filtered_actions.push(new_action);
@@ -45,14 +45,14 @@ export function now(now: Date = new Date(), operation: Operation) {
 }
 
 const defaultConfiguration = {
-  daysPast: parseInt(localStorage['daysPast'] || '14', 10),
-  sortAlphabetically: localStorage['sortAlphabetically'] === 'true',
-  excludeEmpty: localStorage['excludeEmpty'] === 'true',
+  daysPast: parseInt(localStorage.daysPast || '14', 10),
+  sortAlphabetically: localStorage.sortAlphabetically === 'true',
+  excludeEmpty: localStorage.excludeEmpty === 'true',
 };
 export function configuration(configuration: Configuration = defaultConfiguration, operation: Operation) {
   switch (operation.type) {
   case OperationType.SET_CONFIGURATION:
-    const newConfiguration = Object.assign({}, configuration, operation.configuration);
+    const newConfiguration = {...configuration, ...operation.configuration};
     Object.assign(localStorage, newConfiguration);
     return newConfiguration;
   default:

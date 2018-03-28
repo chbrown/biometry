@@ -8,7 +8,7 @@ interface ConfigNumberProps {
   configuration: Configuration;
 }
 
-class ConfigNumber extends React.Component<ConfigNumberProps & ConnectProps, {}> {
+class ConfigNumber extends React.Component<ConfigNumberProps & ConnectProps> {
   @bind
   onChange(ev: React.FormEvent<HTMLInputElement>) {
     const input = ev.target as HTMLInputElement;

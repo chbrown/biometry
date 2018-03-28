@@ -12,10 +12,10 @@ export function bind<T extends Function>(target: Object,
       Object.defineProperty(this, propertyKey, {
         value,
         configurable: true,
-        writable: true
+        writable: true,
       });
       return value;
-    }
+    },
   };
 };
 

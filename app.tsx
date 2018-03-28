@@ -26,7 +26,7 @@ document.addEventListener('visibilitychange', () => {
   document.visibilityState will be either 'hidden' or 'visible'
   */
   if (!document.hidden) { // same as document.visibilityState === 'visible' ?
-    var date = new Date();
+    const date = new Date();
     store.dispatch({type: OperationType.SET_NOW, date});
   }
 });
@@ -36,7 +36,7 @@ interface AppProps {
   now: Date;
 }
 
-class App extends React.Component<AppProps, {}> {
+class App extends React.Component<AppProps> {
   render() {
     const {configuration, now} = this.props;
     const {daysPast} = configuration;
