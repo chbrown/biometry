@@ -1,33 +1,33 @@
-import * as React from 'react';
-import {connect} from 'react-redux';
-import {bind, OperationType, Configuration, GlobalState, ConnectProps} from '../types';
+import * as React from 'react'
+import {connect} from 'react-redux'
+import {bind, OperationType, Configuration, GlobalState, ConnectProps} from '../types'
 
 interface ConfigNumberProps {
-  label: string;
-  name: string;
-  configuration: Configuration;
+  label: string
+  name: string
+  configuration: Configuration
 }
 
 class ConfigNumber extends React.Component<ConfigNumberProps & ConnectProps> {
   @bind
   onChange(ev: React.FormEvent<HTMLInputElement>) {
-    const input = ev.target as HTMLInputElement;
-    const configuration = {[this.props.name]: parseInt(input.value, 10)};
-    this.props.dispatch({type: OperationType.SET_CONFIGURATION, configuration});
+    const input = ev.target as HTMLInputElement
+    const configuration = {[this.props.name]: parseInt(input.value, 10)}
+    this.props.dispatch({type: OperationType.SET_CONFIGURATION, configuration})
   }
   render() {
-    const {label, name, configuration} = this.props;
-    const value = configuration[name];
+    const {label, name, configuration} = this.props
+    const value = configuration[name]
     return (
       <label id={name}>
         <div><b>{label}</b></div>
         <input type="number" value={value} onChange={this.onChange} />
       </label>
-    );
+    )
   }
 }
 
-const mapStateToProps = ({configuration}: GlobalState) => ({configuration});
-const ConnectedConfigNumber = connect(mapStateToProps)(ConfigNumber);
+const mapStateToProps = ({configuration}: GlobalState) => ({configuration})
+const ConnectedConfigNumber = connect(mapStateToProps)(ConfigNumber)
 
-export default ConnectedConfigNumber;
+export default ConnectedConfigNumber

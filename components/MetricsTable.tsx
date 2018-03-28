@@ -1,61 +1,61 @@
-import * as moment from 'moment';
-import * as React from 'react';
-import {flatten} from 'tarry';
-import {connect} from 'react-redux';
-import {metry_host, bind, OperationType, Action, ActionJSON, raiseAction, Actiontype, GlobalState, Configuration, ConnectProps} from '../types';
+import * as moment from 'moment'
+import * as React from 'react'
+import {flatten} from 'tarry'
+import {connect} from 'react-redux'
+import {metry_host, bind, OperationType, Action, ActionJSON, raiseAction, Actiontype, GlobalState, Configuration, ConnectProps} from '../types'
 
-const defaultHeaders = new Headers({'Content-Type': 'application/json'});
+const defaultHeaders = new Headers({'Content-Type': 'application/json'})
 
 /**
 A mixture of day-granularity timestamp (meaning, it will repeat from
 one day to the next) and randomness, but still considerably smaller than the
 maximum safe integer. It will be positive.
 
-P.S. const MAX_SAFE_INTEGER = Number.MAX_SAFE_INTEGER || 9007199254740991;
+P.S. const MAX_SAFE_INTEGER = Number.MAX_SAFE_INTEGER || 9007199254740991
 */
 function randInt(): number {
-  const ticks = new Date().getTime();
-  return (ticks % 10000000) * 1000 + (Math.random() * 1000 | 0);
+  const ticks = new Date().getTime()
+  return (ticks % 10000000) * 1000 + (Math.random() * 1000 | 0)
 }
 
 function groupBy(xs, keyFn) {
-  const hash = {};
+  const hash = {}
   xs.forEach(x => {
-    const key = keyFn(x);
-    let list = hash[key];
+    const key = keyFn(x)
+    let list = hash[key]
     if (list === undefined) {
-      list = hash[key] = [];
+      list = hash[key] = []
     }
-    list.push(x);
-  });
-  return hash;
+    list.push(x)
+  })
+  return hash
 }
 
 function createRange(start: moment.Moment, end: moment.Moment, duration: moment.Duration): moment.Moment[] {
-  const range: moment.Moment[] = [];
-  const cursor = start.clone();
+  const range: moment.Moment[] = []
+  const cursor = start.clone()
   do {
-    range.push(cursor.clone());
-    cursor.add(duration);
-  } while (cursor.isBefore(end));
-  // range.push(end.clone());
-  return range;
+    range.push(cursor.clone())
+    cursor.add(duration)
+  } while (cursor.isBefore(end))
+  // range.push(end.clone())
+  return range
 }
 
 function fetchActions({start, end}: {start?: moment.Moment, end?: moment.Moment}): Promise<Action[]> {
-  const url = `${metry_host}/actions?start=${start.toISOString()}&end=${end.toISOString()}`;
+  const url = `${metry_host}/actions?start=${start.toISOString()}&end=${end.toISOString()}`
   return fetch(url).then(res => res.json())
-  .then((actions_json: ActionJSON[]) => actions_json.map(raiseAction));
+  .then((actions_json: ActionJSON[]) => actions_json.map(raiseAction))
 }
 
 function fetchActiontypes(): Promise<Actiontype[]> {
-  return fetch(`${metry_host}/actiontypes`).then(res => res.json());
+  return fetch(`${metry_host}/actiontypes`).then(res => res.json())
 }
 
 function syncActions(actions: Action[]): Promise<Action[]> {
   return Promise.all(
     actions.map(action => {
-      const resource_id = (action.action_id > 0) ? action.action_id : '';
+      const resource_id = (action.action_id > 0) ? action.action_id : ''
       return fetch(`${metry_host}/actions/${resource_id}`, {
         method: 'POST',
         headers: defaultHeaders,
@@ -65,11 +65,11 @@ function syncActions(actions: Action[]): Promise<Action[]> {
       .then(raiseAction)
       .then(syncedAction => {
         // if it was a temporary action, delete the temporary one
-        const deletes: Action[] = (action.action_id < 0) ? [{action_id: action.action_id, deleted: new Date()}] : [];
-        return [...deletes, syncedAction];
-      });
+        const deletes: Action[] = (action.action_id < 0) ? [{action_id: action.action_id, deleted: new Date()}] : []
+        return [...deletes, syncedAction]
+      })
     })
-  ).then(flatten);
+  ).then(flatten)
 }
 
 /**
@@ -83,14 +83,14 @@ function syncActiontypes(actiontypes: Actiontype[]): Promise<Actiontype[]> {
         headers: defaultHeaders,
         body: JSON.stringify(actiontype),
       })
-      .then(res => res.json());
+      .then(res => res.json())
     })
-  );
+  )
 }
 
 function dispatchSyncActions(dispatch, ...actions: Action[]) {
   // sync local actions
-  dispatch({type: OperationType.ADD_ACTIONS, actions});
+  dispatch({type: OperationType.ADD_ACTIONS, actions})
   // we may not get an immediate rerender of the grayed-out local action
   // without this async closure (apparently it will group the http request
   // and redraw into the same frame event, and wait to repaint until the http
@@ -99,33 +99,33 @@ function dispatchSyncActions(dispatch, ...actions: Action[]) {
   setImmediate(() => {
     syncActions(actions)
     .then(actions => {
-      dispatch({type: OperationType.ADD_ACTIONS, actions});
-      dispatch({type: OperationType.SET_NOW, date: new Date()});
+      dispatch({type: OperationType.ADD_ACTIONS, actions})
+      dispatch({type: OperationType.SET_NOW, date: new Date()})
     })
-    .catch(reason => console.error('syncActions error', reason));
-  });
+    .catch(reason => console.error('syncActions error', reason))
+  })
 }
 
 interface ActionSpanProps {
-  action_id: number;
-  local: boolean;
+  action_id: number
+  local: boolean
 }
 
 class ActionSpan extends React.Component<ActionSpanProps & ConnectProps> {
   @bind
   onDelete(ev: React.MouseEvent<HTMLSpanElement>) {
-    ev.stopPropagation();
+    ev.stopPropagation()
     // create delete action
     dispatchSyncActions(this.props.dispatch, {
       action_id: this.props.action_id,
       deleted: new Date(),
       local: true,
-    });
+    })
   }
   render() {
     return (
       <span className={this.props.local ? 'local' : ''} onMouseDown={this.onDelete}>I</span>
-    );
+    )
   }
   static propTypes = {
     action_id: React.PropTypes.number.isRequired,
@@ -134,29 +134,29 @@ class ActionSpan extends React.Component<ActionSpanProps & ConnectProps> {
   }
 }
 
-const ConnectedActionSpan = connect()(ActionSpan);
+const ConnectedActionSpan = connect()(ActionSpan)
 
 interface ActiontypeCellProps {
-  actiontype_id: number;
-  actions: Action[];
-  className: string;
-  instant: moment.Moment;
+  actiontype_id: number
+  actions: Action[]
+  className: string
+  instant: moment.Moment
 }
 
 class ActiontypeCell extends React.Component<ActiontypeCellProps & ConnectProps> {
   @bind
   onAdd(ev: React.MouseEvent<HTMLDivElement>) {
-    const {instant, actiontype_id} = this.props;
+    const {instant, actiontype_id} = this.props
     dispatchSyncActions(this.props.dispatch, {
       actiontype_id,
       action_id: -randInt(),
       started: instant.toDate(),
       ended: instant.toDate(),
       local: true,
-    });
+    })
   }
   render() {
-    const {actions, className} = this.props;
+    const {actions, className} = this.props
     return (
       <td className={className}>
         <div className="cell" onMouseDown={this.onAdd}>
@@ -165,7 +165,7 @@ class ActiontypeCell extends React.Component<ActiontypeCellProps & ConnectProps>
           ) : '\xA0'}
         </div>
       </td>
-    );
+    )
   }
   static propTypes = {
     actiontype_id: React.PropTypes.number.isRequired,
@@ -176,36 +176,36 @@ class ActiontypeCell extends React.Component<ActiontypeCellProps & ConnectProps>
   }
 }
 
-const ConnectedActiontypeCell = connect()(ActiontypeCell);
+const ConnectedActiontypeCell = connect()(ActiontypeCell)
 
 interface MetricsColumn {
-  start: moment.Moment;
-  middle: moment.Moment;
-  end: moment.Moment;
+  start: moment.Moment
+  middle: moment.Moment
+  end: moment.Moment
 }
 
 interface ActiontypeRowProps {
-  actiontype: Actiontype;
-  actions: Action[];
-  highlighted_moment: moment.Moment;
-  columns: MetricsColumn[];
+  actiontype: Actiontype
+  actions: Action[]
+  highlighted_moment: moment.Moment
+  columns: MetricsColumn[]
 }
 
 class ActiontypeRow extends React.Component<ActiontypeRowProps> {
   render() {
-    const {actiontype, actions, highlighted_moment, columns} = this.props;
+    const {actiontype, actions, highlighted_moment, columns} = this.props
     // the contents should default to non-empty in case there are no actions,
     // thus, \xA0, which is &nbsp; in hex
     const cells = columns.map(({start, middle, end}) => {
       const cellActions = actions.filter(action =>
-        start.isBefore(action.started) && end.isAfter(action.ended));
+        start.isBefore(action.started) && end.isAfter(action.ended))
       // apparently sometimes webpack's UglifyJS step breaks on \xA0 ?
-      const highlighted = highlighted_moment.isBetween(start, end);
-      const instant = highlighted ? highlighted_moment : middle;
+      const highlighted = highlighted_moment.isBetween(start, end)
+      const instant = highlighted ? highlighted_moment : middle
       // if the column is highlighted (is today), use the actual current time
-      return {key: middle.toISOString(), actions: cellActions, highlighted, instant};
-    });
-    const latest = Math.max(...actions.map(action => action.ended.getTime()));
+      return {key: middle.toISOString(), actions: cellActions, highlighted, instant}
+    })
+    const latest = Math.max(...actions.map(action => action.ended.getTime()))
     return (
       <tr>
         <td className="right padded">{actiontype.name}</td>
@@ -216,7 +216,7 @@ class ActiontypeRow extends React.Component<ActiontypeRowProps> {
         <td className="left padded">{actiontype.name}</td>
         <td className="left"><i>{moment(latest).from(highlighted_moment)}</i></td>
       </tr>
-    );
+    )
   }
   static propTypes = {
     actiontype: React.PropTypes.object.isRequired,
@@ -232,84 +232,84 @@ class ActiontypeRow extends React.Component<ActiontypeRowProps> {
 
 
 interface MetricsTableProps {
-  start: moment.Moment;
-  end: moment.Moment;
-  actions: Action[];
-  actiontypes: Actiontype[];
-  now: Date;
-  configuration: Configuration;
+  start: moment.Moment
+  end: moment.Moment
+  actions: Action[]
+  actiontypes: Actiontype[]
+  now: Date
+  configuration: Configuration
 }
 
 class MetricsTable extends React.Component<MetricsTableProps & ConnectProps> {
   componentDidMount() {
-    const {start, end} = this.props;
+    const {start, end} = this.props
     Promise.all([fetchActions({start, end}), fetchActiontypes()])
     .then(([actions, actiontypes]) => {
-      this.props.dispatch({type: OperationType.ADD_ACTIONS, actions});
-      this.props.dispatch({type: OperationType.ADD_ACTIONTYPES, actiontypes});
+      this.props.dispatch({type: OperationType.ADD_ACTIONS, actions})
+      this.props.dispatch({type: OperationType.ADD_ACTIONTYPES, actiontypes})
     })
-    .catch(reason => console.error('fetchActions(types) error', reason));
+    .catch(reason => console.error('fetchActions(types) error', reason))
   }
   @bind
   onAddActiontype(ev: React.FormEvent<HTMLFormElement>) {
     // stop form submit
-    ev.preventDefault();
+    ev.preventDefault()
     // get input name
-    const input = this.refs.actiontypeName as HTMLInputElement;
-    const name = input.value;
-    const actiontypes = [{name}];
+    const input = this.refs.actiontypeName as HTMLInputElement
+    const name = input.value
+    const actiontypes = [{name}]
     syncActiontypes(actiontypes)
     .then(actiontypes => {
-      this.props.dispatch({type: OperationType.ADD_ACTIONTYPES, actiontypes});
-      input.value = '';
+      this.props.dispatch({type: OperationType.ADD_ACTIONTYPES, actiontypes})
+      input.value = ''
     })
-    .catch(reason => console.error('syncActiontypes error', reason));
+    .catch(reason => console.error('syncActiontypes error', reason))
   }
   render() {
-    const {start, end, actions, actiontypes, now, configuration} = this.props;
-    const actions_hashmap = groupBy(actions, action => action.actiontype_id);
+    const {start, end, actions, actiontypes, now, configuration} = this.props
+    const actions_hashmap = groupBy(actions, action => action.actiontype_id)
     const columns = createRange(start, end, moment.duration(1, 'day'))
     .map(range_moment => {
       return {
         start: range_moment,
         middle: range_moment.clone().add(12, 'hour'),
         end: range_moment.clone().add(1, 'day'),
-      };
-    });
+      }
+    })
     // filter down to only the actions within this timeframe
     // nvm, fetchActions should only retrieve the relevant ones
     // const actions = this.props.actions.filter(action =>
-    //   start.isBefore(action.started) && end.isAfter(action.ended));
+    //   start.isBefore(action.started) && end.isAfter(action.ended))
     // and group them by actiontype_id
-    const highlighted_moment = moment(now);
+    const highlighted_moment = moment(now)
     const actiontypesWithActions = actiontypes.filter(actiontype => {
-      const actiontypeActions = actions_hashmap[actiontype.actiontype_id] || [];
-      const enteredSameDay = moment(actiontype.entered).isSame(highlighted_moment, 'day');
+      const actiontypeActions = actions_hashmap[actiontype.actiontype_id] || []
+      const enteredSameDay = moment(actiontype.entered).isSame(highlighted_moment, 'day')
       // if excludeEmpty is false, we include everything
-      return !configuration.excludeEmpty || (actiontypeActions.length > 0 || enteredSameDay);
+      return !configuration.excludeEmpty || (actiontypeActions.length > 0 || enteredSameDay)
     }).sort((actiontype1, actiontype2) => {
       if (configuration.sortAlphabetically) {
-        return actiontype1.name.localeCompare(actiontype2.name);
+        return actiontype1.name.localeCompare(actiontype2.name)
       }
-      return actiontype1.entered.localeCompare(actiontype2.entered);
+      return actiontype1.entered.localeCompare(actiontype2.entered)
     }).map(actiontype => {
-      const actiontypeActions = actions_hashmap[actiontype.actiontype_id] || [];
-      return {actiontype, actions: actiontypeActions};
-    });
+      const actiontypeActions = actions_hashmap[actiontype.actiontype_id] || []
+      return {actiontype, actions: actiontypeActions}
+    })
     return (
       <table>
         <thead>
           <tr>
             <th className="right padded">Dates:</th>
             {columns.map(column => {
-              const label = column.middle.format('M/D');
-              const day = column.middle.format('ddd');
-              const highlighted = highlighted_moment.isBetween(column.start, column.end);
+              const label = column.middle.format('M/D')
+              const day = column.middle.format('ddd')
+              const highlighted = highlighted_moment.isBetween(column.start, column.end)
               return (
                 <th key={label} className={highlighted ? 'highlighted' : ''}>
                   <div>{label}</div>{day}
                 </th>
-              );
+              )
             })}
             <th></th>
           </tr>
@@ -331,7 +331,7 @@ class MetricsTable extends React.Component<MetricsTableProps & ConnectProps> {
           </tr>
         </tfoot>
       </table>
-    );
+    )
   }
   static propTypes = {
     start: React.PropTypes.object.isRequired,
@@ -339,7 +339,7 @@ class MetricsTable extends React.Component<MetricsTableProps & ConnectProps> {
   }
 }
 
-const mapStateToProps = ({actions, actiontypes, now, configuration}: GlobalState) => ({actions, actiontypes, now, configuration});
-const ConnectedMetricsTable = connect(mapStateToProps)(MetricsTable);
+const mapStateToProps = ({actions, actiontypes, now, configuration}: GlobalState) => ({actions, actiontypes, now, configuration})
+const ConnectedMetricsTable = connect(mapStateToProps)(MetricsTable)
 
-export default ConnectedMetricsTable;
+export default ConnectedMetricsTable

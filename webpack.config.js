@@ -1,7 +1,7 @@
-const path = require('path');
-const webpack = require('webpack');
+const path = require('path')
+const webpack = require('webpack')
 
-const env = process.env.NODE_ENV || 'development';
+const env = process.env.NODE_ENV || 'development'
 
 module.exports = {
   entry: './app',
@@ -36,4 +36,4 @@ module.exports = {
       },
     ],
   },
-};
+}

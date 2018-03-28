@@ -1,1 +1,1 @@
-declare const __WEBPACK_TIMESTAMP__: string;
+declare const __WEBPACK_TIMESTAMP__: string

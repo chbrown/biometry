@@ -1,11 +1,11 @@
-import * as React from 'react';
-import * as moment from 'moment';
-import {connect} from 'react-redux';
-import {Action, Actiontype, GlobalState} from '../types';
+import * as React from 'react'
+import * as moment from 'moment'
+import {connect} from 'react-redux'
+import {Action, Actiontype, GlobalState} from '../types'
 
 const ActionRow = ({action, actiontype, now, format = 'YYYY-MM-DD h:mma'}) => {
-  const instantaneous = (action.started - action.ended) === 0;
-  const ago = moment(action.entered).from(now);
+  const instantaneous = (action.started - action.ended) === 0
+  const ago = moment(action.entered).from(now)
   return (
     <tr>
       <td className="right">[<i title="entered">{ago}</i>]</td>
@@ -21,19 +21,19 @@ const ActionRow = ({action, actiontype, now, format = 'YYYY-MM-DD h:mma'}) => {
         }
       </td>
     </tr>
-  );
-};
+  )
+}
 
 interface RecentActionsProps {
-  actions: Action[];
-  actiontypes: Actiontype[];
-  now: Date;
-  limit: number;
+  actions: Action[]
+  actiontypes: Actiontype[]
+  now: Date
+  limit: number
 }
 
 class RecentActions extends React.Component<RecentActionsProps> {
   render() {
-    const {actions, actiontypes, now, limit = 20} = this.props;
+    const {actions, actiontypes, now, limit = 20} = this.props
     return (
       <table>
         {actions.slice(-limit).reverse().map(action =>
@@ -41,11 +41,11 @@ class RecentActions extends React.Component<RecentActionsProps> {
             actiontype={actiontypes.find(actiontype => actiontype.actiontype_id == action.actiontype_id)} />
         )}
       </table>
-    );
+    )
   }
 }
 
-const mapStateToProps = ({actions, actiontypes, now}: GlobalState) => ({actions, actiontypes, now});
-const ConnectedRecentActions = connect(mapStateToProps)(RecentActions);
+const mapStateToProps = ({actions, actiontypes, now}: GlobalState) => ({actions, actiontypes, now})
+const ConnectedRecentActions = connect(mapStateToProps)(RecentActions)
 
-export default ConnectedRecentActions;
+export default ConnectedRecentActions
