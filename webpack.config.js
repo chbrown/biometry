@@ -1,38 +1,44 @@
-const path = require('path')
+const {resolve} = require('path')
 const webpack = require('webpack')
 
 const env = process.env.NODE_ENV || 'development'
 
 module.exports = {
+  mode: env,
   entry: './app',
   output: {
-    path: path.join(__dirname, 'build'),
+    path: resolve(__dirname, 'build'),
     filename: 'bundle.js',
-    publicPath: '/build/',
   },
   plugins: [
     new webpack.DefinePlugin({
-      'process.env.NODE_ENV': JSON.stringify(env),
-      "__WEBPACK_TIMESTAMP__": JSON.stringify(new Date().toISOString()),
+      __WEBPACK_TIMESTAMP__: JSON.stringify(new Date().toISOString()),
     }),
     // exclude Moment locales (400 kB)
-    new webpack.IgnorePlugin(/^\.\/locale$/, [/moment$/]),
-    ...(env === 'development' ? [
-      new webpack.NoErrorsPlugin(),
-    ] : [
-      new webpack.optimize.OccurenceOrderPlugin(),
-      new webpack.optimize.UglifyJsPlugin(),
-    ]),
+    new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/),
   ],
   module: {
-    loaders: [
+    rules: [
       {
         test: /\.js$/,
-        loaders: ['babel-loader'],
+        exclude: /node_modules/,
+        use: {
+          loader: 'babel-loader',
+          options: {
+            presets: ['env'],
+          },
+        },
       },
       {
         test: /\.less$/,
-        loaders: ['style-loader', 'css-loader', 'less-loader'],
+        exclude: /node_modules/,
+        use: [{
+          loader: 'style-loader',
+        }, {
+          loader: 'css-loader',
+        }, {
+          loader: 'less-loader',
+        }],
       },
     ],
   },
