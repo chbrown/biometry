@@ -3,6 +3,7 @@ import * as React from 'react'
 import {flatten} from 'tarry'
 import {connect} from 'react-redux'
 import {metry_host, bind, OperationType, Action, ActionJSON, raiseAction, Actiontype, GlobalState, Configuration, ConnectProps} from '../types'
+const {PropTypes} = React
 
 const defaultHeaders = new Headers({'Content-Type': 'application/json'})
 
@@ -128,9 +129,9 @@ class ActionSpan extends React.Component<ActionSpanProps & ConnectProps> {
     )
   }
   static propTypes = {
-    action_id: React.PropTypes.number.isRequired,
-    local: React.PropTypes.bool,
-    dispatch: React.PropTypes.func.isRequired, // redux store dispatcher
+    action_id: PropTypes.number.isRequired,
+    local: PropTypes.bool,
+    dispatch: PropTypes.func.isRequired, // redux store dispatcher
   }
 }
 
@@ -168,11 +169,11 @@ class ActiontypeCell extends React.Component<ActiontypeCellProps & ConnectProps>
     )
   }
   static propTypes = {
-    actiontype_id: React.PropTypes.number.isRequired,
-    actions: React.PropTypes.array.isRequired,
-    className: React.PropTypes.string,
-    dispatch: React.PropTypes.func.isRequired, // redux store dispatcher
-    instant: React.PropTypes.object.isRequired, // moment.Moment
+    actiontype_id: PropTypes.number.isRequired,
+    actions: PropTypes.array.isRequired,
+    className: PropTypes.string,
+    dispatch: PropTypes.func.isRequired, // redux store dispatcher
+    instant: PropTypes.object.isRequired, // moment.Moment
   }
 }
 
@@ -219,13 +220,13 @@ class ActiontypeRow extends React.Component<ActiontypeRowProps> {
     )
   }
   static propTypes = {
-    actiontype: React.PropTypes.object.isRequired,
-    actions: React.PropTypes.array.isRequired,
-    highlighted_moment: React.PropTypes.object.isRequired,
-    columns: React.PropTypes.arrayOf(React.PropTypes.shape({
-      start: React.PropTypes.object.isRequired,
-      middle: React.PropTypes.object.isRequired,
-      end: React.PropTypes.object.isRequired,
+    actiontype: PropTypes.object.isRequired,
+    actions: PropTypes.array.isRequired,
+    highlighted_moment: PropTypes.object.isRequired,
+    columns: PropTypes.arrayOf(PropTypes.shape({
+      start: PropTypes.object.isRequired,
+      middle: PropTypes.object.isRequired,
+      end: PropTypes.object.isRequired,
     })).isRequired,
   }
 }
@@ -334,8 +335,8 @@ class MetricsTable extends React.Component<MetricsTableProps & ConnectProps> {
     )
   }
   static propTypes = {
-    start: React.PropTypes.object.isRequired,
-    end: React.PropTypes.object.isRequired,
+    start: PropTypes.object.isRequired,
+    end: PropTypes.object.isRequired,
   }
 }
 
