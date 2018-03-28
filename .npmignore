@@ -3,5 +3,4 @@
 !*.d.ts
 site.less
 tsconfig.json
-webpack-dev-server.js
 webpack.config.js

@@ -4,10 +4,7 @@ const webpack = require('webpack');
 const env = process.env.NODE_ENV || 'development';
 
 module.exports = {
-  entry: [
-    './app',
-    ...(env === 'development' ? ['webpack-hot-middleware/client'] : []),
-  ],
+  entry: './app',
   output: {
     path: path.join(__dirname, 'build'),
     filename: 'bundle.js',
@@ -21,7 +18,6 @@ module.exports = {
     // exclude Moment locales (400 kB)
     new webpack.IgnorePlugin(/^\.\/locale$/, [/moment$/]),
     ...(env === 'development' ? [
-      new webpack.HotModuleReplacementPlugin(),
       new webpack.NoErrorsPlugin(),
     ] : [
       new webpack.optimize.OccurenceOrderPlugin(),
