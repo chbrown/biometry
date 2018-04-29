@@ -1,7 +1,7 @@
 {
   "name": "biometry",
   "description": "Biometry user interface",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "keywords": [
     "biometrics"
   ],
