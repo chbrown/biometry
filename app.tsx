@@ -12,6 +12,8 @@ import ConfigCheckbox from './components/ConfigCheckbox'
 import * as reducers from './reducers'
 import {OperationType, Configuration, GlobalState} from './types'
 
+const packageDefinition = require('./package.json')
+
 import './site.less'
 
 const buildTimestamp = __WEBPACK_TIMESTAMP__
@@ -60,8 +62,9 @@ class App extends React.Component<AppProps> {
           <RecentActions limit={20} />
         </section>
         <footer>
-          <div className="now-timestamp">{now.toISOString()}</div>
-          <div className="build-timestamp">{buildTimestamp}</div>
+          <div className="important">Now: {now.toISOString()}</div>
+          <div>Built: {buildTimestamp}</div>
+          <div>Version: {packageDefinition.version}</div>
         </footer>
       </main>
     )
