@@ -1,6 +1,7 @@
 import * as React from 'react'
 import {connect} from 'react-redux'
-import {bind, OperationType, Configuration, GlobalState, ConnectProps} from '../types'
+import bind from '@chbrown/bind'
+import {OperationType, Configuration, GlobalState, ConnectProps} from '../types'
 
 export interface ConfigCheckboxProps {
   configuration: Configuration
@@ -8,7 +9,7 @@ export interface ConfigCheckboxProps {
   name: string
 }
 
-class ConfigCheckbox extends React.Component<ConfigCheckboxProps & ConnectProps, any> {
+class ConfigCheckbox extends React.Component<ConfigCheckboxProps & ConnectProps> {
   @bind
   onChange(ev: React.FormEvent<HTMLInputElement>) {
     const input = ev.currentTarget

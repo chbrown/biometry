@@ -13,6 +13,7 @@
   "author": "Christopher Brown <io@henrian.com> (http://henrian.com)",
   "license": "MIT",
   "dependencies": {
+    "@chbrown/bind": "1.0.0",
     "moment": "2.22.2",
     "prop-types": "15.6.2",
     "react": "16.4.1",

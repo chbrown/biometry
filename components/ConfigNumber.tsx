@@ -1,6 +1,7 @@
 import * as React from 'react'
 import {connect} from 'react-redux'
-import {bind, OperationType, Configuration, GlobalState, ConnectProps} from '../types'
+import bind from '@chbrown/bind'
+import {OperationType, Configuration, GlobalState, ConnectProps} from '../types'
 
 interface ConfigNumberProps {
   label: string

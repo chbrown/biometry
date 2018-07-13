@@ -3,7 +3,8 @@ import * as React from 'react'
 import * as PropTypes from 'prop-types'
 import {flatten} from 'tarry'
 import {connect} from 'react-redux'
-import {metry_host, bind, OperationType, Action, ActionJSON, raiseAction, Actiontype, GlobalState, Configuration, ConnectProps} from '../types'
+import bind from '@chbrown/bind'
+import {metry_host, OperationType, Action, ActionJSON, raiseAction, Actiontype, GlobalState, Configuration, ConnectProps} from '../types'
 
 const defaultHeaders = new Headers({'Content-Type': 'application/json'})
 

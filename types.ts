@@ -2,23 +2,6 @@ import {DispatchProp} from 'react-redux'
 
 export const metry_host = 'https://metry.test'
 
-export function bind<T extends Function>(target: Object,
-                                         propertyKey: string | symbol,
-                                         descriptor: TypedPropertyDescriptor<T>): TypedPropertyDescriptor<T> | void {
-  return {
-    configurable: true,
-    get(this: T): T {
-      const value = descriptor.value.bind(this)
-      Object.defineProperty(this, propertyKey, {
-        value,
-        configurable: true,
-        writable: true,
-      })
-      return value
-    },
-  }
-}
-
 /**
 Action will have a random temporary ID called tmp_id until it is synced with the
 remote database, after which it will receive a unique ID, which overrides the tmp_id.
