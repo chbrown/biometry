@@ -2,6 +2,17 @@ import {DispatchProp} from 'react-redux'
 
 export const metry_host = 'https://metry.test'
 
+export type PropsWhere<T, PT> = {
+  [P in keyof T]: T[P] extends PT ? P : never
+}
+
+/**
+From T derive a subtype with properties P[] where T[P] extends KT
+
+Inspired by https://medium.com/dailyjs/typescript-create-a-condition-based-subset-types-9d902cea5b8c
+*/
+export type PickWhere<T, PT> = Pick<T, PropsWhere<T, PT>[keyof T]>
+
 /**
 Action will have a random temporary ID called tmp_id until it is synced with the
 remote database, after which it will receive a unique ID, which overrides the tmp_id.

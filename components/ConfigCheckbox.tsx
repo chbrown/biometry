@@ -1,12 +1,12 @@
 import * as React from 'react'
 import {connect} from 'react-redux'
 import bind from '@chbrown/bind'
-import {OperationType, Configuration, GlobalState, ConnectProps} from '../types'
+import {PickWhere, OperationType, Configuration, GlobalState, ConnectProps} from '../types'
 
 export interface ConfigCheckboxProps {
   configuration: Configuration
-  label: string
-  name: string
+  name: keyof PickWhere<Configuration, boolean>
+  label?: string
 }
 
 class ConfigCheckbox extends React.Component<ConfigCheckboxProps & ConnectProps> {
@@ -22,7 +22,7 @@ class ConfigCheckbox extends React.Component<ConfigCheckboxProps & ConnectProps>
     return (
       <label id={name}>
         <input type="checkbox" checked={value} onChange={this.onChange} />
-        <b>{label}</b>
+        <b>{label || name}</b>
       </label>
     )
   }

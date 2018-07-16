@@ -1,12 +1,12 @@
 import * as React from 'react'
 import {connect} from 'react-redux'
 import bind from '@chbrown/bind'
-import {OperationType, Configuration, GlobalState, ConnectProps} from '../types'
+import {PickWhere, OperationType, Configuration, GlobalState, ConnectProps} from '../types'
 
-interface ConfigNumberProps {
-  label: string
-  name: string
+export interface ConfigNumberProps {
   configuration: Configuration
+  name: keyof PickWhere<Configuration, number>
+  label?: string
 }
 
 class ConfigNumber extends React.Component<ConfigNumberProps & ConnectProps> {
@@ -21,7 +21,7 @@ class ConfigNumber extends React.Component<ConfigNumberProps & ConnectProps> {
     const value = configuration[name]
     return (
       <label id={name}>
-        <div><b>{label}</b></div>
+        <div><b>{label || name}</b></div>
         <input type="number" value={value} onChange={this.onChange} />
       </label>
     )
