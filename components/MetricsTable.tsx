@@ -20,17 +20,18 @@ function randInt(): number {
   return (ticks % 10000000) * 1000 + (Math.random() * 1000 | 0)
 }
 
-function groupBy(xs, keyFn) {
-  const hash = {}
-  xs.forEach(x => {
+function groupBy<K, V>(values: V[], keyFn: (value: V) => K): Map<K, V[]> {
+  const hashmap = new Map<K, V[]>()
+  values.forEach(x => {
     const key = keyFn(x)
-    let list = hash[key]
+    let list = hashmap.get(key)
     if (list === undefined) {
-      list = hash[key] = []
+      list = []
+      hashmap.set(key, list)
     }
     list.push(x)
   })
-  return hash
+  return hashmap
 }
 
 function createRange(start: moment.Moment, end: moment.Moment, duration: moment.Duration): moment.Moment[] {
@@ -285,7 +286,7 @@ class MetricsTable extends React.Component<MetricsTableProps & ConnectProps> {
     // and group them by actiontype_id
     const highlighted_moment = moment(now)
     const actiontypesWithActions = actiontypes.filter(actiontype => {
-      const actiontypeActions = actions_hashmap[actiontype.actiontype_id] || []
+      const actiontypeActions = actions_hashmap.get(actiontype.actiontype_id) || []
       const enteredSameDay = moment(actiontype.entered).isSame(highlighted_moment, 'day')
       // if excludeEmpty is false, we include everything
       return !configuration.excludeEmpty || (actiontypeActions.length > 0 || enteredSameDay)
@@ -295,7 +296,7 @@ class MetricsTable extends React.Component<MetricsTableProps & ConnectProps> {
       }
       return actiontype1.entered.localeCompare(actiontype2.entered)
     }).map(actiontype => {
-      const actiontypeActions = actions_hashmap[actiontype.actiontype_id] || []
+      const actiontypeActions = actions_hashmap.get(actiontype.actiontype_id) || []
       return {actiontype, actions: actiontypeActions}
     })
     return (
