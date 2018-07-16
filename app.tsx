@@ -1,7 +1,10 @@
 import * as React from 'react'
 import {render} from 'react-dom'
-import {combineReducers, createStore} from 'redux'
+import {createHashHistory} from 'history'
+import {applyMiddleware, combineReducers, compose, createStore} from 'redux'
 import {Provider} from 'react-redux'
+import {Route, Switch} from 'react-router'
+import {connectRouter, routerMiddleware, ConnectedRouter} from 'connected-react-router'
 
 import * as reducers from './reducers'
 import {OperationType} from './types'
@@ -9,8 +12,16 @@ import App from './components/App'
 
 import './site.less'
 
+const history = createHashHistory()
 const reducer = combineReducers(reducers)
-const store = createStore(reducer)
+const store = createStore(
+  connectRouter(history)(reducer),
+  compose(
+    applyMiddleware(
+      routerMiddleware(history)
+    )
+  )
+)
 
 document.addEventListener('visibilitychange', () => {
   /**
@@ -26,6 +37,10 @@ document.addEventListener('visibilitychange', () => {
 
 render((
   <Provider store={store}>
-    <App />
+    <ConnectedRouter history={history}>
+      <Switch>
+        <Route component={App} />
+      </Switch>
+    </ConnectedRouter>
   </Provider>
 ), document.getElementById('app'))
