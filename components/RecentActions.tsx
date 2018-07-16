@@ -3,8 +3,15 @@ import * as moment from 'moment'
 import {connect} from 'react-redux'
 import {Action, Actiontype, GlobalState} from '../types'
 
-const ActionRow = ({action, actiontype, now, format = 'YYYY-MM-DD h:mma'}) => {
-  const instantaneous = (action.started - action.ended) === 0
+interface ActionRowProps {
+  action: Action
+  actiontype: Actiontype
+  now: Date
+  format?: string
+}
+
+const ActionRow: React.StatelessComponent<ActionRowProps> = ({action, actiontype, now, format = 'YYYY-MM-DD h:mma'}) => {
+  const instantaneous = (action.started.getTime() - action.ended.getTime()) === 0
   const ago = moment(action.entered).from(now)
   return (
     <tr>
@@ -28,22 +35,17 @@ interface RecentActionsProps {
   actions: Action[]
   actiontypes: Actiontype[]
   now: Date
-  limit: number
+  limit?: number
 }
 
-class RecentActions extends React.Component<RecentActionsProps> {
-  render() {
-    const {actions, actiontypes, now, limit = 20} = this.props
-    return (
-      <table>
-        {actions.slice(-limit).reverse().map(action =>
-          <ActionRow key={action.action_id} action={action} now={now}
-            actiontype={actiontypes.find(actiontype => actiontype.actiontype_id == action.actiontype_id)} />
-        )}
-      </table>
-    )
-  }
-}
+const RecentActions: React.StatelessComponent<RecentActionsProps> = ({actions, actiontypes, now, limit = 20}) => (
+  <table>
+    {actions.slice(-limit).reverse().map(action =>
+      <ActionRow key={action.action_id} action={action} now={now}
+        actiontype={actiontypes.find(actiontype => actiontype.actiontype_id == action.actiontype_id)} />
+    )}
+  </table>
+)
 
 const mapStateToProps = ({actions, actiontypes, now}: GlobalState) => ({actions, actiontypes, now})
 const ConnectedRecentActions = connect(mapStateToProps)(RecentActions)

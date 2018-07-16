@@ -2,6 +2,7 @@ import * as moment from 'moment'
 import * as React from 'react'
 import * as PropTypes from 'prop-types'
 import {flatten} from 'tarry'
+import {Dispatch} from 'redux'
 import {connect} from 'react-redux'
 import bind from '@chbrown/bind'
 import {metry_host, OperationType, Action, ActionJSON, raiseAction, Actiontype, GlobalState, Configuration, ConnectProps} from '../types'
@@ -91,7 +92,7 @@ function syncActiontypes(actiontypes: Actiontype[]): Promise<Actiontype[]> {
   )
 }
 
-function dispatchSyncActions(dispatch, ...actions: Action[]) {
+function dispatchSyncActions(dispatch: Dispatch, ...actions: Action[]) {
   // sync local actions
   dispatch({type: OperationType.ADD_ACTIONS, actions})
   // we may not get an immediate rerender of the grayed-out local action
@@ -148,7 +149,7 @@ interface ActiontypeCellProps {
 
 class ActiontypeCell extends React.Component<ActiontypeCellProps & ConnectProps> {
   @bind
-  onAdd(ev: React.MouseEvent<HTMLDivElement>) {
+  onAdd(_ev: React.MouseEvent<HTMLDivElement>) {
     const {instant, actiontype_id} = this.props
     dispatchSyncActions(this.props.dispatch, {
       actiontype_id,
