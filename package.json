@@ -6,10 +6,7 @@
     "biometrics"
   ],
   "homepage": "https://github.com/chbrown/biometry",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/chbrown/biometry.git"
-  },
+  "repository": "github:chbrown/biometry",
   "author": "Christopher Brown <io@henrian.com> (http://henrian.com)",
   "license": "MIT",
   "dependencies": {
