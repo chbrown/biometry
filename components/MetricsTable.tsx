@@ -1,6 +1,5 @@
 import * as moment from 'moment'
 import * as React from 'react'
-import * as PropTypes from 'prop-types'
 import {flatten} from 'tarry'
 import {Dispatch} from 'redux'
 import {connect} from 'react-redux'
@@ -131,11 +130,6 @@ class ActionSpan extends React.Component<ActionSpanProps & ConnectProps> {
       <span className={this.props.local ? 'local' : ''} onMouseDown={this.onDelete}>I</span>
     )
   }
-  static propTypes = {
-    action_id: PropTypes.number.isRequired,
-    local: PropTypes.bool,
-    dispatch: PropTypes.func.isRequired, // redux store dispatcher
-  }
 }
 
 const ConnectedActionSpan = connect()(ActionSpan)
@@ -170,13 +164,6 @@ class ActiontypeCell extends React.Component<ActiontypeCellProps & ConnectProps>
         </div>
       </td>
     )
-  }
-  static propTypes = {
-    actiontype_id: PropTypes.number.isRequired,
-    actions: PropTypes.array.isRequired,
-    className: PropTypes.string,
-    dispatch: PropTypes.func.isRequired, // redux store dispatcher
-    instant: PropTypes.object.isRequired, // moment.Moment
   }
 }
 
@@ -221,16 +208,6 @@ class ActiontypeRow extends React.Component<ActiontypeRowProps> {
         <td className="left"><i>{moment(latest).from(highlighted_moment)}</i></td>
       </tr>
     )
-  }
-  static propTypes = {
-    actiontype: PropTypes.object.isRequired,
-    actions: PropTypes.array.isRequired,
-    highlighted_moment: PropTypes.object.isRequired,
-    columns: PropTypes.arrayOf(PropTypes.shape({
-      start: PropTypes.object.isRequired,
-      middle: PropTypes.object.isRequired,
-      end: PropTypes.object.isRequired,
-    })).isRequired,
   }
 }
 
@@ -336,10 +313,6 @@ class MetricsTable extends React.Component<MetricsTableProps & ConnectProps> {
         </tfoot>
       </table>
     )
-  }
-  static propTypes = {
-    start: PropTypes.object.isRequired,
-    end: PropTypes.object.isRequired,
   }
 }
 
