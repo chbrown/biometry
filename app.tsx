@@ -12,10 +12,10 @@ import App from './components/App'
 
 import './site.less'
 
+const createReducer = (history) => combineReducers({router: connectRouter(history), ...reducers})
 const history = createHashHistory()
-const reducer = combineReducers(reducers)
 const store = createStore(
-  connectRouter(history)(reducer),
+  createReducer(history),
   compose(
     applyMiddleware(
       routerMiddleware(history)
