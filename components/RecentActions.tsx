@@ -10,7 +10,7 @@ interface ActionRowProps {
   format?: string
 }
 
-const ActionRow: React.StatelessComponent<ActionRowProps> = ({action, actiontype, now, format = 'YYYY-MM-DD h:mma'}) => {
+const ActionRow = ({action, actiontype, now, format = 'YYYY-MM-DD h:mma'}: ActionRowProps) => {
   const instantaneous = (action.started.getTime() - action.ended.getTime()) === 0
   const ago = moment(action.entered).from(now)
   return (
@@ -38,12 +38,14 @@ interface RecentActionsProps {
   limit?: number
 }
 
-const RecentActions: React.StatelessComponent<RecentActionsProps> = ({actions, actiontypes, now, limit = 20}) => (
+const RecentActions = ({actions, actiontypes, now, limit = 20}: RecentActionsProps) => (
   <table>
-    {actions.slice(-limit).reverse().map(action =>
-      <ActionRow key={action.action_id} action={action} now={now}
-        actiontype={actiontypes.find(actiontype => actiontype.actiontype_id == action.actiontype_id)} />
-    )}
+    <tbody>
+      {actions.slice(-limit).reverse().map(action =>
+        <ActionRow key={action.action_id} action={action} now={now}
+          actiontype={actiontypes.find(actiontype => actiontype.actiontype_id == action.actiontype_id)} />
+      )}
+    </tbody>
   </table>
 )
 

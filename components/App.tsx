@@ -19,37 +19,35 @@ interface AppProps {
   now: Date
 }
 
-class App extends React.Component<AppProps> {
-  render() {
-    const {configuration, now} = this.props
-    const {daysPast} = configuration
-    const end = moment().endOf('day')
-    const start = end.clone().subtract(daysPast, 'd')
-    return (
-      <main>
-        <div className="flex">
-          <h2>Biometry App</h2>
-          <div>
-            <ConfigNumber label="Days Past" name="daysPast" />
-            <ConfigCheckbox label="Sort Alphabetically" name="sortAlphabetically" />
-            <ConfigCheckbox label="Exclude Empty" name="excludeEmpty" />
-          </div>
+const App = (props: AppProps) => {
+  const {configuration, now} = props
+  const {daysPast} = configuration
+  const end = moment().endOf('day')
+  const start = end.clone().subtract(daysPast, 'd')
+  return (
+    <main>
+      <div className="flex">
+        <h2>Biometry App</h2>
+        <div>
+          <ConfigNumber label="Days Past" name="daysPast" />
+          <ConfigCheckbox label="Sort Alphabetically" name="sortAlphabetically" />
+          <ConfigCheckbox label="Exclude Empty" name="excludeEmpty" />
         </div>
-        <section>
-          <MetricsTable start={start} end={end} />
-        </section>
-        <section>
-          <h3>Recent Additions</h3>
-          <RecentActions limit={20} />
-        </section>
-        <footer>
-          <div className="important">Now: {now.toISOString()}</div>
-          <div>Built: {buildTimestamp}</div>
-          <div>Version: {packageDefinition.version}</div>
-        </footer>
-      </main>
-    )
-  }
+      </div>
+      <section>
+        <MetricsTable start={start} end={end} />
+      </section>
+      <section>
+        <h3>Recent Additions</h3>
+        <RecentActions limit={20} />
+      </section>
+      <footer>
+        <div className="important">Now: {now.toISOString()}</div>
+        <div>Built: {buildTimestamp}</div>
+        <div>Version: {packageDefinition.version}</div>
+      </footer>
+    </main>
+  )
 }
 
 const mapStateToProps = ({configuration, now}: GlobalState) => ({configuration, now})
