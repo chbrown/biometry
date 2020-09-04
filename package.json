@@ -42,6 +42,14 @@
     "webpack": "4.44.1",
     "webpack-cli": "3.3.12"
   },
+  "babel": {
+    "plugins": [
+      "@babel/plugin-transform-runtime"
+    ],
+    "presets": [
+      "@babel/preset-env"
+    ]
+  },
   "scripts": {
     "prepare": "tsc",
     "prepack": "NODE_ENV=production webpack",

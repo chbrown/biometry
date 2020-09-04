@@ -1,10 +1,10 @@
 const {resolve} = require('path')
 const webpack = require('webpack')
 
-const env = process.env.NODE_ENV || 'development'
+const mode = process.env.NODE_ENV || 'development'
 
 module.exports = {
-  mode: env,
+  mode,
   entry: './app',
   output: {
     path: resolve(__dirname, 'build'),
@@ -12,6 +12,7 @@ module.exports = {
   },
   plugins: [
     new webpack.DefinePlugin({
+      'process.env.NODE_ENV': JSON.stringify(mode),
       __WEBPACK_TIMESTAMP__: JSON.stringify(new Date().toISOString()),
     }),
     // exclude Moment locales (400 kB)
@@ -22,23 +23,12 @@ module.exports = {
       {
         test: /\.js$/,
         exclude: /node_modules/,
-        use: {
-          loader: 'babel-loader',
-          options: {
-            presets: ['env'],
-          },
-        },
+        use: ['babel-loader'],
       },
       {
         test: /\.less$/,
         exclude: /node_modules/,
-        use: [{
-          loader: 'style-loader',
-        }, {
-          loader: 'css-loader',
-        }, {
-          loader: 'less-loader',
-        }],
+        use: ['style-loader', 'css-loader', 'less-loader'],
       },
     ],
   },
