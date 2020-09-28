@@ -9,7 +9,7 @@ import RecentActions from './RecentActions'
 import ConfigNumber from './ConfigNumber'
 import ConfigCheckbox from './ConfigCheckbox'
 
-const packageDefinition = require('../package.json')
+const packageDefinition = require('../../package.json')
 
 // webpack replaces this symbol when building the full bundle
 const buildTimestamp = process.env.WEBPACK_TIMESTAMP

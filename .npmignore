@@ -1,6 +1,5 @@
 *.ts
 *.tsx
-!*.d.ts
-site.less
+*.less
 tsconfig.json
 webpack.config.js
