@@ -12,7 +12,7 @@ import ConfigCheckbox from './ConfigCheckbox'
 const packageDefinition = require('../package.json')
 
 // webpack replaces this symbol when building the full bundle
-const buildTimestamp = __WEBPACK_TIMESTAMP__
+const buildTimestamp = process.env.WEBPACK_TIMESTAMP
 
 interface AppProps {
   configuration: Configuration
